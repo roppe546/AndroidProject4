@@ -1,4 +1,4 @@
-package com.example.robin.androidproject4;
+package com.example.robin.androidproject4.view;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +12,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Contact;
 
 import java.util.ArrayList;
 

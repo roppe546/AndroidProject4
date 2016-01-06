@@ -1,4 +1,4 @@
-package com.example.robin.androidproject4;
+package com.example.robin.androidproject4.model;
 
 /**
  * Created by robin on 6/1/16.

@@ -1,4 +1,4 @@
-package com.example.robin.androidproject4;
+package com.example.robin.androidproject4.view;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Contact;
 
 import java.util.ArrayList;
 import java.util.Calendar;
