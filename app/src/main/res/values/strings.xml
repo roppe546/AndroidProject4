@@ -6,6 +6,11 @@
     <string name="menu_settings_text">Settings</string>
     <string name="menu_logout_text">Log out</string>
 
+    <!-- Strings related to contact list -->
+
+    <!-- Strings related to chat -->
+    <string name="chat_message_hint">Message</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         }
         contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
         contactList.setAdapter(contactListAdapter);
+        contactList.setOnItemClickListener(new ContactSelectedListener());
 
     }
 
@@ -77,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
             Log.i("Login", "Not logged in, redirect to login activity");
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
+        }
+    }
+
+    private class ContactSelectedListener implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Log.i("ContactList", "Contact " + position + " selected");
+            Intent chat = new Intent(getApplicationContext(), ChatActivity.class);
+            startActivity(chat);
         }
     }
 }
