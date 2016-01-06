@@ -35,21 +35,29 @@ public class MainActivity extends AppCompatActivity {
         // Get shared preferences
         pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        checkIfLoggedIn();
+        if (checkIfLoggedIn()) {
+            // Get UI elements
+            contactList = (ListView) findViewById(R.id.contactListView);
 
-        // Get UI elements
-        contactList = (ListView) findViewById(R.id.contactListView);
-
-        // Populate list view
-        // TODO: Remove dummy data
-        DUMMY_CONTACTS = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1)));
+            // Populate list view
+            // TODO: Remove dummy data
+            DUMMY_CONTACTS = new ArrayList<>();
+            for (int i = 0; i < 15; i++) {
+                DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1)));
+            }
+            contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
+            contactList.setAdapter(contactListAdapter);
+            contactList.setOnItemClickListener(new ContactSelectedListener());
         }
-        contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
-        contactList.setAdapter(contactListAdapter);
-        contactList.setOnItemClickListener(new ContactSelectedListener());
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!checkIfLoggedIn()) {
+            this.finish();
+        }
     }
 
     @Override
@@ -66,24 +74,43 @@ public class MainActivity extends AppCompatActivity {
         switch (itemId) {
             case R.id.menu_settings :
                 Log.i("ActionMenu", "Selected Settings in menu (main)");
-//                startActivityForResult(new Intent(this, SettingsActivity.class), 200);
+                Intent settings = new Intent(this, SettingsActivity.class);
+                startActivity(settings);
                 break;
             case R.id.menu_logout :
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
-                break;
+                Log.i("Login", "Logged out (main)");
+
+                // Clear logged in user from shared preferences
+                SharedPreferences.Editor editor = pref.edit();
+                editor.remove("loggedInUser");
+                editor.commit();
+
+                // Send back to login activity
+                Intent login = new Intent(this, LoginActivity.class);
+                login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(login);
+                this.finish();
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void checkIfLoggedIn() {
+    private boolean checkIfLoggedIn() {
         String loggedInUser = pref.getString("loggedInUser", null);
 
         if (loggedInUser == null) {
             Log.i("Login", "Not logged in, redirect to login activity");
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
+            this.finish();
+
+            return false;
         }
+
+        return true;
     }
 
     private class ContactSelectedListener implements AdapterView.OnItemClickListener {

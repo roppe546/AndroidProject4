@@ -20,4 +20,7 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+
+    <!-- Strings related to settings -->
+    <string name="copyright">© 2016 Peonsson and roppe546</string>
 </resources>

@@ -3,6 +3,7 @@ package com.example.robin.androidproject4.view;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -231,6 +232,9 @@ public class LoginActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = pref.edit();
                 editor.putString("loggedInUser", mEmail.toString());
                 editor.commit();
+
+                Intent main = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(main);
 
                 finish();
             }
