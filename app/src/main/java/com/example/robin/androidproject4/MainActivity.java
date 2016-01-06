@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity {
 
         switch (itemId) {
             case R.id.menu_settings :
-                Log.i("ActionMenu", "Selected Settings in menu");
+                Log.i("ActionMenu", "Selected Settings in menu (main)");
 //                startActivityForResult(new Intent(this, SettingsActivity.class), 200);
                 break;
             case R.id.menu_logout :
-                Log.i("ActionMenu", "Selected Log out in menu");
+                Log.i("ActionMenu", "Selected Log out in menu (main)");
                 break;
         }
 
