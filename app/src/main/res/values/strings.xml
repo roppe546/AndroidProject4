@@ -2,6 +2,10 @@
     <string name="app_name">AndroidProject4</string>
     <string name="title_activity_login">Sign in</string>
 
+    <!-- Strings related to drop down menu -->
+    <string name="menu_settings_text">Settings</string>
+    <string name="menu_logout_text">Log out</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>

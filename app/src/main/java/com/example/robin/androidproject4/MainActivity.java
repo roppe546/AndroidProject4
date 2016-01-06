@@ -6,6 +6,9 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -41,6 +44,30 @@ public class MainActivity extends AppCompatActivity {
         contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
         contactList.setAdapter(contactListAdapter);
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+
+        switch (itemId) {
+            case R.id.menu_settings :
+                Log.i("ActionMenu", "Selected Settings in menu");
+//                startActivityForResult(new Intent(this, SettingsActivity.class), 200);
+                break;
+            case R.id.menu_logout :
+                Log.i("ActionMenu", "Selected Log out in menu");
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void checkIfLoggedIn() {
