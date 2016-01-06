@@ -29,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
         checkIfLoggedIn();
 
+        // Get UI elements
+        contactList = (ListView) findViewById(R.id.contactListView);
+
         // Populate list view
         // TODO: Remove dummy data
         DUMMY_CONTACTS = new ArrayList<>();
@@ -36,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
             DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1)));
         }
         contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
-        contactList = (ListView) findViewById(R.id.contactListView);
         contactList.setAdapter(contactListAdapter);
 
     }
