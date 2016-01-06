@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.robin.androidproject4.R;
@@ -30,10 +31,14 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
         }
 
         // Get elements in item
+        ImageView profilePicture = (ImageView) convertView.findViewById(R.id.contactlist_item_profile_picture);
         TextView username = (TextView) convertView.findViewById(R.id.contactlist_item_username);
         TextView lastMessageReceived = (TextView) convertView.findViewById(R.id.contactlist_item_last_message_received_timestamp);
 
         // Set fields
+        // Profile picture
+        profilePicture.setImageDrawable(contact.getProfilePicture());
+
         // Username
         username.setText(contact.getUsername());
 

@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO: Remove dummy data
             DUMMY_CONTACTS = new ArrayList<>();
             for (int i = 0; i < 15; i++) {
-                DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1)));
+                DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1), getResources().getDrawable(R.drawable.profile_picture_placeholder)));
             }
             contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
             contactList.setAdapter(contactListAdapter);

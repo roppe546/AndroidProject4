@@ -3,11 +3,18 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="24pt">
 
+    <ImageView
+        android:id="@+id/contactlist_item_profile_picture"
+        android:layout_width="23pt"
+        android:layout_height="23pt"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="2pt"/>
+
     <TextView
         android:id="@+id/contactlist_item_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="left" />
+        android:layout_toRightOf="@id/contactlist_item_profile_picture"/>
 
     <TextView
         android:id="@+id/contactlist_item_last_message_received_timestamp"
