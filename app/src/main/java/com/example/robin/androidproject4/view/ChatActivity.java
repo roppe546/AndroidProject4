@@ -11,14 +11,25 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
 
 import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Message;
+
+import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
-    private SharedPreferences pref;
+    private ArrayList<Message> history;
 
+    private SharedPreferences pref;
+    private ListView chatHistory;
+    private ChatHistoryAdapter chatHistoryAdapter;
+    private EditText textField;
     private ImageButton galleryButton;
+    private Button sendButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +43,21 @@ public class ChatActivity extends AppCompatActivity {
         pref = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Get UI elements
+        chatHistory = (ListView) findViewById(R.id.history_list_view);
+        textField = (EditText) findViewById(R.id.textfield);
         galleryButton = (ImageButton) findViewById(R.id.gallery_button);
         galleryButton.setOnClickListener(new GalleryButtonClickListener());
+        sendButton = (Button) findViewById(R.id.send_button);
+        sendButton.setOnClickListener(new SendButtonClickListener());
+
+        // Populate chat history
+        history = new ArrayList<>();
+        // TODO: Get history from server, don't use dummy data
+        for (int i = 0; i < 5; i++) {
+            history.add(new Message("Sender name", "Can you hear me?"));
+        }
+        chatHistoryAdapter = new ChatHistoryAdapter(this, history);
+        chatHistory.setAdapter(chatHistoryAdapter);
     }
 
     @Override
@@ -83,8 +107,25 @@ public class ChatActivity extends AppCompatActivity {
         public void onClick(View v) {
             Log.i("Chat", "Gallery button clicked");
 
-            Intent picImage = Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), "Choose an image");
+            Intent picImage = Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), getString(R.string.chat_choose_image_text));
             startActivity(picImage);
+        }
+    }
+
+    private class SendButtonClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Log.i("Chat", "Send button clicked");
+
+            if (textField.getText().length() <= 0 || textField.getText() == null) {
+                Log.i("Chat", "Text field empty, not sending");
+                return;
+            }
+
+            history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString()));
+            textField.setText("");
+            chatHistory.setSelection(chatHistory.getCount() - 1);
+            // TODO: Send to server instead of doing it locally
         }
     }
 }
