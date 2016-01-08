@@ -12,6 +12,7 @@
 
     <TextView
         android:id="@+id/contactlist_item_username"
+        android:textSize="18dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/contactlist_item_profile_picture"/>
@@ -20,6 +21,7 @@
         android:id="@+id/contactlist_item_last_message_received_timestamp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right" />
+        android:gravity="right"
+        android:layout_marginTop="3dp"/>
 
 </RelativeLayout>
