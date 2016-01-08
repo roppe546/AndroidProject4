@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.robin.androidproject4.R;
@@ -39,7 +40,7 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         TextView sender = (TextView) convertView.findViewById(R.id.chat_sender);
         TextView timestamp = (TextView) convertView.findViewById(R.id.chat_timestamp);
         TextView messageText = (TextView) convertView.findViewById(R.id.chat_message);
-//        ImageView image = (ImageView) convertView.findViewById(R.id.chat_image);
+        ImageView image = (ImageView) convertView.findViewById(R.id.chat_message_image);
 
         // Set fields
         // Username
@@ -61,7 +62,7 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         messageText.setText(message.getMessage());
 
         // Image
-//        image.setImageDrawable(contact.getProfilePicture());
+        image.setImageDrawable(message.getImage());
 
         return convertView;
     }

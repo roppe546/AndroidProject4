@@ -55,6 +55,8 @@ public class ChatActivity extends AppCompatActivity {
         for (int i = 0; i < 5; i++) {
             history.add(new Message("Sender name", "Can you hear me?"));
         }
+        history.add(new Message("Sender name", "Can you see the image?", getResources().getDrawable(R.drawable.ic_account_square_gray)));
+
         chatHistoryAdapter = new ChatHistoryAdapter(this, history);
         chatHistory.setAdapter(chatHistoryAdapter);
     }
