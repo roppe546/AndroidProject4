@@ -3,6 +3,7 @@
     <string name="title_activity_login">Sign in</string>
 
     <!-- Strings related to drop down menu -->
+    <string name="menu_add_contact_text">Add contact</string>
     <string name="menu_settings_text">Settings</string>
     <string name="menu_logout_text">Log out</string>
 
