@@ -154,7 +154,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 catch (ActivityNotFoundException e) {
                     // No image viewer found
-                    Toast.makeText(getApplicationContext(), R.string.chat_open_iamge_fail, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.chat_open_image_fail, Toast.LENGTH_LONG).show();
                 }
             }
         }

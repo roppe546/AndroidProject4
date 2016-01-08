@@ -22,8 +22,8 @@
 
     <ImageView
         android:id="@+id/chat_message_image"
-        android:layout_width="10pt"
-        android:layout_height="10pt"
+        android:layout_width="8pt"
+        android:layout_height="8pt"
         android:layout_marginLeft="5pt"
         android:layout_toRightOf="@id/chat_sender"/>
 

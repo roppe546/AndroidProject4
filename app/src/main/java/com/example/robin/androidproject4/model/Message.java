@@ -12,6 +12,7 @@ public class Message {
     private Date timestamp;
     private String message;
     // image variable in case message has an image
+    // TODO: Should probably be URI to file stored in cloud
     private Drawable image;
 
     /**
