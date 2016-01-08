@@ -1,5 +1,6 @@
 package com.example.robin.androidproject4.view;
 
+import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -72,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
         int itemId = item.getItemId();
 
         switch (itemId) {
+            case R.id.menu_add_contact :
+                Log.i("ActionMenu", "Selected Add Contact in menu (main)");
+                DialogFragment addContactDialog = new AddContactDialog();
+                addContactDialog.show(getFragmentManager(), "add_contact");
+                break;
             case R.id.menu_settings :
                 Log.i("ActionMenu", "Selected Settings in menu (main)");
                 Intent settings = new Intent(this, SettingsActivity.class);

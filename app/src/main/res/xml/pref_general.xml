@@ -12,5 +12,5 @@
 
     <Preference
         android:enabled="false"
-        android:title="@string/copyright"/>
+        android:title="@string/settings_copyright"/>
 </PreferenceScreen>
