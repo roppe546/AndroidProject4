@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu, menu);
+        menuInflater.inflate(R.menu.menu_contact_list, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 // Clear logged in user from shared preferences
                 SharedPreferences.Editor editor = pref.edit();
                 editor.remove("loggedInUser");
-                editor.commit();
+                editor.apply();
 
                 // Send back to login activity
                 Intent login = new Intent(this, LoginActivity.class);

@@ -3,7 +3,6 @@ package com.example.robin.androidproject4.view;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -84,7 +83,7 @@ public class ChatActivity extends AppCompatActivity {
                 // Clear logged in user from shared preferences
                 SharedPreferences.Editor editor = pref.edit();
                 editor.remove("loggedInUser");
-                editor.commit();
+                editor.apply();
 
                 // Send back to login activity
                 Intent login = new Intent(this, LoginActivity.class);
