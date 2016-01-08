@@ -2,6 +2,7 @@ package com.example.robin.androidproject4.view;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +53,9 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         int date = c.get(Calendar.DAY_OF_MONTH);
         int hour = c.get(Calendar.HOUR_OF_DAY);
         int minute = c.get(Calendar.MINUTE);
-        timestamp.setText(year + "-" + (month + 1) + "-" + date + " " + hour + ":" + minute);
+        Resources res = getContext().getResources();
+        String receivedText = String.format(res.getString(R.string.chat_history_received_time), year, (month + 1), date, hour, minute);
+        timestamp.setText(receivedText);
 
         // Message
         messageText.setText(message.getMessage());

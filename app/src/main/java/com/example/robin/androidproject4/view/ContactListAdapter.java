@@ -1,6 +1,7 @@
 package com.example.robin.androidproject4.view;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +51,9 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
         int date = c.get(Calendar.DAY_OF_MONTH);
         int hour = c.get(Calendar.HOUR_OF_DAY);
         int minute = c.get(Calendar.MINUTE);
-        lastMessageReceived.setText(year + "-" + (month + 1) + "-" + date + " " + hour + ":" + minute);
+        Resources res = getContext().getResources();
+        String lastReceivedText = String.format(res.getString(R.string.contact_list_last_received_time), year, (month + 1), date, hour, minute);
+        lastMessageReceived.setText(lastReceivedText);
 
         return convertView;
     }
