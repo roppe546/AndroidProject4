@@ -4,6 +4,7 @@
 
     <!-- For camera -->
     <permission android:name="WRITE_EXTERNAL_STORAGE" />
+    <permission android:name="INTERNET" />
 
     <application
         android:allowBackup="true"

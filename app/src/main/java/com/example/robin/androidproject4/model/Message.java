@@ -24,6 +24,7 @@ public class Message {
         this.sender = sender;
         this.timestamp = new Date();
         this.message = message;
+        this.image = null;
     }
 
     /**
@@ -70,5 +71,12 @@ public class Message {
 
     public void setImage(Drawable image) {
         this.image = image;
+    }
+
+    public boolean hasImage() {
+        if (image == null)
+            return false;
+
+        return true;
     }
 }

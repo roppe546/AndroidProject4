@@ -19,6 +19,7 @@
     <string name="chat_message_hint">Message</string>
     <string name="chat_send_button_text">Send</string>
     <string name="chat_choose_image_text">Choose an image</string>
+    <string name="chat_open_iamge_fail">No image viewer app found</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>

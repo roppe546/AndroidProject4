@@ -1,7 +1,9 @@
 package com.example.robin.androidproject4.view;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,10 +12,12 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Message;
@@ -55,10 +59,11 @@ public class ChatActivity extends AppCompatActivity {
         for (int i = 0; i < 5; i++) {
             history.add(new Message("Sender name", "Can you hear me?"));
         }
-        history.add(new Message("Sender name", "Can you see the image?", getResources().getDrawable(R.drawable.ic_account_square_gray)));
+        history.add(new Message("Sender name", "Can you see the image? (Doesn't work in emulator!)", getResources().getDrawable(R.drawable.ic_account_square_gray)));
 
         chatHistoryAdapter = new ChatHistoryAdapter(this, history);
         chatHistory.setAdapter(chatHistoryAdapter);
+        chatHistory.setOnItemClickListener(new ChatMessageClickedListener());
     }
 
     @Override
@@ -127,6 +132,31 @@ public class ChatActivity extends AppCompatActivity {
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
             // TODO: Send to server instead of doing it locally
+        }
+    }
+
+    private class ChatMessageClickedListener implements android.widget.AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Log.i("Chat", "Message touched");
+
+            Message message = history.get(position);
+
+            if (message.hasImage()) {
+                Log.i("Chat", "Message has image attached");
+
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                // TODO: Open uploaded image instead of test image (Message object might need to store URI instead of Drawable)
+                i.setDataAndType(Uri.parse("http://www.networkforgood.com/wp-content/uploads/2015/08/bigstock-Test-word-on-white-keyboard-27134336.jpg"), "image/*");
+
+                try {
+                    startActivity(i);
+                }
+                catch (ActivityNotFoundException e) {
+                    // No image viewer found
+                    Toast.makeText(getApplicationContext(), R.string.chat_open_iamge_fail, Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 }
