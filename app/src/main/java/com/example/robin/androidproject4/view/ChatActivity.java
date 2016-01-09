@@ -196,7 +196,7 @@ public class ChatActivity extends AppCompatActivity {
 
                 break;
             case CHOOSE_IMAGE_FROM_ALBUM_REQUEST_CODE:
-                if (data != null) {
+                if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was chosen");
 
                     try {
@@ -218,6 +218,9 @@ public class ChatActivity extends AppCompatActivity {
                         Log.i("Chat", "File inputstream couldn't be read.");
                         Toast.makeText(getApplicationContext(), getString(R.string.chat_error_could_not_read_image), Toast.LENGTH_LONG).show();
                     }
+                }
+                else if (resultCode == RESULT_CANCELED) {
+                    Log.i("Chat", "No image was chosen");
                 }
 
                 break;
