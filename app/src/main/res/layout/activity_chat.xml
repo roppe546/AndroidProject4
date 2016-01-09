@@ -67,17 +67,16 @@
                 android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_delete"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 android:layout_toStartOf="@+id/send_button" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/send_button"
-                style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/chat_send_button_text"
+                android:src="@android:drawable/ic_menu_send"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true" />
         </LinearLayout>

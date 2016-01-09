@@ -42,7 +42,7 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton cameraButton;
     private ImageButton galleryButton;
     private ImageButton deleteAttachmentButton;
-    private Button sendButton;
+    private ImageButton sendButton;
 
     private Bitmap selectedImage = null;
     private ArrayList<Message> history;
@@ -65,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
         cameraButton = (ImageButton) findViewById(R.id.camera_button);
         galleryButton = (ImageButton) findViewById(R.id.gallery_button);
         deleteAttachmentButton = (ImageButton) findViewById(R.id.delete_attachment_button);
-        sendButton = (Button) findViewById(R.id.send_button);
+        sendButton = (ImageButton) findViewById(R.id.send_button);
 
         // Set button listeners
         cameraButton.setOnClickListener(new CameraButtonClickListener());
