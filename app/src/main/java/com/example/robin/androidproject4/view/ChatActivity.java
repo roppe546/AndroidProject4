@@ -39,7 +39,8 @@ public class ChatActivity extends AppCompatActivity {
     private ListView chatHistory;
     private ChatHistoryAdapter chatHistoryAdapter;
     private EditText textField;
-    private ImageButton galleryButton;
+    private ImageButton galleryButton_add;
+    private ImageButton galleryButton_delete;
     private Button sendButton;
 
     @Override
@@ -56,9 +57,13 @@ public class ChatActivity extends AppCompatActivity {
         // Get UI elements
         chatHistory = (ListView) findViewById(R.id.history_list_view);
         textField = (EditText) findViewById(R.id.textfield);
-        galleryButton = (ImageButton) findViewById(R.id.gallery_button);
-        galleryButton.setOnClickListener(new GalleryButtonClickListener());
+        galleryButton_add = (ImageButton) findViewById(R.id.gallery_button_add_attachment);
+        galleryButton_delete = (ImageButton) findViewById(R.id.gallery_button_delete_attachment);
         sendButton = (Button) findViewById(R.id.send_button);
+
+        // Set button listeners
+        galleryButton_add.setOnClickListener(new GalleryButtonAddClickListener());
+        galleryButton_delete.setOnClickListener(new GalleryButtonDeleteClickListener());
         sendButton.setOnClickListener(new SendButtonClickListener());
 
         // Populate chat history
@@ -116,7 +121,7 @@ public class ChatActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class GalleryButtonClickListener implements View.OnClickListener {
+    private class GalleryButtonAddClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             Log.i("Chat", "Gallery button clicked");
@@ -146,16 +151,19 @@ public class ChatActivity extends AppCompatActivity {
                     Log.i("Chat", "Image was chosen");
 
                     try {
+                        // Save image to variable
                         Uri uriToImage = data.getData();
                         InputStream imageStream = getContentResolver().openInputStream(uriToImage);
                         selectedImage = BitmapFactory.decodeStream(imageStream);
-                        // Set icon in message field to give feedback an image is attached
 
+                        // Set icon in message field to give feedback an image is attached
                         Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
                         img.setBounds(0, 0, 50, 50);
                         textField.setCompoundDrawables(null, null, img, null);
 
-//                        textField.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_attach_file_black_48dp, 0);
+                        // Replace add attachment button with delete attachment button
+                        galleryButton_add.setVisibility(View.INVISIBLE);
+                        galleryButton_delete.setVisibility(View.VISIBLE);
                     }
                     catch (FileNotFoundException e) {
                         Log.i("Chat", "File inputstream couldn't be read.");
@@ -164,6 +172,20 @@ public class ChatActivity extends AppCompatActivity {
                 }
 
                 break;
+        }
+    }
+
+    private class GalleryButtonDeleteClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            selectedImage = null;
+
+            // Clear attachment icon from text field
+            textField.setCompoundDrawables(null, null, null, null);
+
+            // Replace delete attachment button with add attachment button
+            galleryButton_delete.setVisibility(View.INVISIBLE);
+            galleryButton_add.setVisibility(View.VISIBLE);
         }
     }
 
@@ -187,6 +209,11 @@ public class ChatActivity extends AppCompatActivity {
                 history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString(), selectedImage));
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
+
+                // Replace delete attachment button with add attachment button
+                galleryButton_delete.setVisibility(View.INVISIBLE);
+                galleryButton_add.setVisibility(View.VISIBLE);
+
                 // Set image to null again so it won't be sent next time
                 selectedImage = null;
             }
