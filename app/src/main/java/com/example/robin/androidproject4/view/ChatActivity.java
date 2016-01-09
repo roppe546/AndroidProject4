@@ -40,8 +40,8 @@ public class ChatActivity extends AppCompatActivity {
     private ChatHistoryAdapter chatHistoryAdapter;
     private EditText textField;
     private ImageButton cameraButton;
-    private ImageButton galleryButton_add;
-    private ImageButton galleryButton_delete;
+    private ImageButton galleryButton;
+    private ImageButton deleteAttachmentButton;
     private Button sendButton;
 
     private Bitmap selectedImage = null;
@@ -63,14 +63,14 @@ public class ChatActivity extends AppCompatActivity {
         chatHistory = (ListView) findViewById(R.id.history_list_view);
         textField = (EditText) findViewById(R.id.textfield);
         cameraButton = (ImageButton) findViewById(R.id.camera_button);
-        galleryButton_add = (ImageButton) findViewById(R.id.gallery_button_add_attachment);
-        galleryButton_delete = (ImageButton) findViewById(R.id.gallery_button_delete_attachment);
+        galleryButton = (ImageButton) findViewById(R.id.gallery_button);
+        deleteAttachmentButton = (ImageButton) findViewById(R.id.delete_attachment_button);
         sendButton = (Button) findViewById(R.id.send_button);
 
         // Set button listeners
         cameraButton.setOnClickListener(new CameraButtonClickListener());
-        galleryButton_add.setOnClickListener(new GalleryButtonAddClickListener());
-        galleryButton_delete.setOnClickListener(new GalleryButtonDeleteClickListener());
+        galleryButton.setOnClickListener(new GalleryButtonClickListener());
+        deleteAttachmentButton.setOnClickListener(new DeleteAttachmentButtonClickListener());
         sendButton.setOnClickListener(new SendButtonClickListener());
 
         // Populate chat history
@@ -160,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Class used for handling clicks to the gallery button
      */
-    private class GalleryButtonAddClickListener implements View.OnClickListener {
+    private class GalleryButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             Log.i("Chat", "Gallery button clicked");
@@ -189,6 +189,19 @@ public class ChatActivity extends AppCompatActivity {
             case CAPTURE_IMAGE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was captured");
+
+                    // Save image to variable
+                    selectedImage = (Bitmap) data.getExtras().get("data");
+
+                    // Set icon in message field to give feedback an image is attached
+                    Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
+                    img.setBounds(0, 0, 50, 50);
+                    textField.setCompoundDrawables(null, null, img, null);
+
+                    // Hide camera/gallery buttons and show delete attachment button
+                    cameraButton.setVisibility(View.INVISIBLE);
+                    galleryButton.setVisibility(View.INVISIBLE);
+                    deleteAttachmentButton.setVisibility(View.VISIBLE);
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was taken");
@@ -210,9 +223,10 @@ public class ChatActivity extends AppCompatActivity {
                         img.setBounds(0, 0, 50, 50);
                         textField.setCompoundDrawables(null, null, img, null);
 
-                        // Replace add attachment button with delete attachment button
-                        galleryButton_add.setVisibility(View.INVISIBLE);
-                        galleryButton_delete.setVisibility(View.VISIBLE);
+                        // Hide camera/gallery buttons and show only delete attachment button
+                        cameraButton.setVisibility(View.INVISIBLE);
+                        galleryButton.setVisibility(View.INVISIBLE);
+                        deleteAttachmentButton.setVisibility(View.VISIBLE);
                     }
                     catch (FileNotFoundException e) {
                         Log.i("Chat", "File inputstream couldn't be read.");
@@ -231,7 +245,7 @@ public class ChatActivity extends AppCompatActivity {
     /**
      * Class used for handling clicks to the delete attachment button
      */
-    private class GalleryButtonDeleteClickListener implements View.OnClickListener {
+    private class DeleteAttachmentButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             selectedImage = null;
@@ -239,9 +253,10 @@ public class ChatActivity extends AppCompatActivity {
             // Clear attachment icon from text field
             textField.setCompoundDrawables(null, null, null, null);
 
-            // Replace delete attachment button with add attachment button
-            galleryButton_delete.setVisibility(View.INVISIBLE);
-            galleryButton_add.setVisibility(View.VISIBLE);
+            // Show camera/gallery buttons and hide delete attachment button
+            cameraButton.setVisibility(View.VISIBLE);
+            galleryButton.setVisibility(View.VISIBLE);
+            deleteAttachmentButton.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -270,9 +285,10 @@ public class ChatActivity extends AppCompatActivity {
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
 
-                // Replace delete attachment button with add attachment button
-                galleryButton_delete.setVisibility(View.INVISIBLE);
-                galleryButton_add.setVisibility(View.VISIBLE);
+                // Show camera/gallery buttons and hide delete attachment button
+                cameraButton.setVisibility(View.VISIBLE);
+                galleryButton.setVisibility(View.VISIBLE);
+                deleteAttachmentButton.setVisibility(View.INVISIBLE);
 
                 // Set image to null again so it won't be sent next time
                 selectedImage = null;
