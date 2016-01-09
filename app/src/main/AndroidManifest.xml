@@ -3,7 +3,10 @@
     package="com.example.robin.androidproject4">
 
     <!-- For camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <permission android:name="WRITE_EXTERNAL_STORAGE" />
+
+    <!-- For accessing back end -->
     <permission android:name="INTERNET" />
 
     <application

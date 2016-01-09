@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,12 +31,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
-    private final int CHOOSE_IMAGE = 1000;
-    private Bitmap selectedImage = null;
+    // Request codes
+    private final int CAPTURE_IMAGE_REQUEST_CODE = 1000;
+    private final int CHOOSE_IMAGE_FROM_ALBUM_REQUEST_CODE = 1005;
 
-    private ArrayList<Message> history;
-
-    private SharedPreferences pref;
+    // UI elements and adapters
     private ListView chatHistory;
     private ChatHistoryAdapter chatHistoryAdapter;
     private EditText textField;
@@ -43,6 +43,10 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton galleryButton_add;
     private ImageButton galleryButton_delete;
     private Button sendButton;
+
+    private Bitmap selectedImage = null;
+    private ArrayList<Message> history;
+    private SharedPreferences pref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,7 +149,10 @@ public class ChatActivity extends AppCompatActivity {
     private class CameraButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            Log.i("Chat", "Camera button clicked");
 
+            Intent takeImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(takeImage, CAPTURE_IMAGE_REQUEST_CODE);
         }
     }
 
@@ -159,7 +166,7 @@ public class ChatActivity extends AppCompatActivity {
             Log.i("Chat", "Gallery button clicked");
 
             Intent picImage = Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), getString(R.string.chat_choose_image_text));
-            startActivityForResult(picImage, CHOOSE_IMAGE);
+            startActivityForResult(picImage, CHOOSE_IMAGE_FROM_ALBUM_REQUEST_CODE);
         }
     }
 
@@ -179,7 +186,16 @@ public class ChatActivity extends AppCompatActivity {
         Log.i("Chat", "Result from activity with request code: " + requestCode);
 
         switch (requestCode) {
-            case CHOOSE_IMAGE :
+            case CAPTURE_IMAGE_REQUEST_CODE:
+                if (resultCode == RESULT_OK) {
+                    Log.i("Chat", "Image was captured");
+                }
+                else if (resultCode == RESULT_CANCELED) {
+                    Log.i("Chat", "No image was taken");
+                }
+
+                break;
+            case CHOOSE_IMAGE_FROM_ALBUM_REQUEST_CODE:
                 if (data != null) {
                     Log.i("Chat", "Image was chosen");
 
