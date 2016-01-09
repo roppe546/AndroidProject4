@@ -199,8 +199,8 @@ public class ChatActivity extends AppCompatActivity {
                     textField.setCompoundDrawables(null, null, img, null);
 
                     // Hide camera/gallery buttons and show delete attachment button
-                    cameraButton.setVisibility(View.INVISIBLE);
-                    galleryButton.setVisibility(View.INVISIBLE);
+                    cameraButton.setVisibility(View.GONE);
+                    galleryButton.setVisibility(View.GONE);
                     deleteAttachmentButton.setVisibility(View.VISIBLE);
                 }
                 else if (resultCode == RESULT_CANCELED) {
@@ -224,8 +224,8 @@ public class ChatActivity extends AppCompatActivity {
                         textField.setCompoundDrawables(null, null, img, null);
 
                         // Hide camera/gallery buttons and show only delete attachment button
-                        cameraButton.setVisibility(View.INVISIBLE);
-                        galleryButton.setVisibility(View.INVISIBLE);
+                        cameraButton.setVisibility(View.GONE);
+                        galleryButton.setVisibility(View.GONE);
                         deleteAttachmentButton.setVisibility(View.VISIBLE);
                     }
                     catch (FileNotFoundException e) {
@@ -256,7 +256,7 @@ public class ChatActivity extends AppCompatActivity {
             // Show camera/gallery buttons and hide delete attachment button
             cameraButton.setVisibility(View.VISIBLE);
             galleryButton.setVisibility(View.VISIBLE);
-            deleteAttachmentButton.setVisibility(View.INVISIBLE);
+            deleteAttachmentButton.setVisibility(View.GONE);
         }
     }
 
@@ -288,7 +288,7 @@ public class ChatActivity extends AppCompatActivity {
                 // Show camera/gallery buttons and hide delete attachment button
                 cameraButton.setVisibility(View.VISIBLE);
                 galleryButton.setVisibility(View.VISIBLE);
-                deleteAttachmentButton.setVisibility(View.INVISIBLE);
+                deleteAttachmentButton.setVisibility(View.GONE);
 
                 // Set image to null again so it won't be sent next time
                 selectedImage = null;
