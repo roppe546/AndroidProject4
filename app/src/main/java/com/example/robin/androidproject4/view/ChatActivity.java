@@ -39,6 +39,7 @@ public class ChatActivity extends AppCompatActivity {
     private ListView chatHistory;
     private ChatHistoryAdapter chatHistoryAdapter;
     private EditText textField;
+    private ImageButton cameraButton;
     private ImageButton galleryButton_add;
     private ImageButton galleryButton_delete;
     private Button sendButton;
@@ -57,11 +58,13 @@ public class ChatActivity extends AppCompatActivity {
         // Get UI elements
         chatHistory = (ListView) findViewById(R.id.history_list_view);
         textField = (EditText) findViewById(R.id.textfield);
+        cameraButton = (ImageButton) findViewById(R.id.camera_button);
         galleryButton_add = (ImageButton) findViewById(R.id.gallery_button_add_attachment);
         galleryButton_delete = (ImageButton) findViewById(R.id.gallery_button_delete_attachment);
         sendButton = (Button) findViewById(R.id.send_button);
 
         // Set button listeners
+        cameraButton.setOnClickListener(new CameraButtonClickListener());
         galleryButton_add.setOnClickListener(new GalleryButtonAddClickListener());
         galleryButton_delete.setOnClickListener(new GalleryButtonDeleteClickListener());
         sendButton.setOnClickListener(new SendButtonClickListener());
@@ -79,6 +82,13 @@ public class ChatActivity extends AppCompatActivity {
         chatHistory.setOnItemClickListener(new ChatMessageClickedListener());
     }
 
+
+    /**
+     * Create an action menu for the view
+     *
+     * @param menu  the menu which to add elements to
+     * @return      true/false
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
@@ -86,6 +96,13 @@ public class ChatActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    /**
+     * Handles clicks to option menu items.
+     *
+     * @param item  the item in the action menu that was clicked
+     * @return      true/false whether action succeeded or not
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -121,6 +138,21 @@ public class ChatActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * Class used for handling clicks to the camera button.
+     */
+    private class CameraButtonClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+
+        }
+    }
+
+
+    /**
+     * Class used for handling clicks to the gallery button
+     */
     private class GalleryButtonAddClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -130,6 +162,7 @@ public class ChatActivity extends AppCompatActivity {
             startActivityForResult(picImage, CHOOSE_IMAGE);
         }
     }
+
 
     /**
      * Callback method which is called when a user chooses an image from
@@ -175,6 +208,10 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Class used for handling clicks to the delete attachment button
+     */
     private class GalleryButtonDeleteClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -189,6 +226,10 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Class used for handling clicks to the send button
+     */
     private class SendButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -220,10 +261,13 @@ public class ChatActivity extends AppCompatActivity {
 
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
-
         }
     }
 
+
+    /**
+     * Class used to handle clicks to individual messages in the chat history
+     */
     private class ChatMessageClickedListener implements android.widget.AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
