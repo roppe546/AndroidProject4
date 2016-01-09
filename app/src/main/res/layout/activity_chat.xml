@@ -17,14 +17,17 @@
         android:layout_gravity="top"
         android:layout_above="@+id/message_area" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/message_area"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:weightSum="1" >
+        android:layout_alignWithParentIfMissing="false"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentTop="false">
 
         <EditText
             android:id="@+id/textfield"
@@ -32,22 +35,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="bottom"
-            android:layout_weight="0.80" />
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/gallery_button" />
+
 
         <ImageButton
             android:id="@+id/gallery_button"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0.10"
-            android:src="@android:drawable/ic_menu_gallery" />
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_toStartOf="@+id/send_button"
+            android:layout_alignBottom="@+id/textfield"
+            android:layout_alignParentTop="true" />
 
         <Button
             android:id="@+id/send_button"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0.10"
-            android:text="@string/chat_send_button_text" />
+            android:layout_height="wrap_content"
+            android:text="@string/chat_send_button_text"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@+id/gallery_button" />
 
-    </LinearLayout>
+    </RelativeLayout>
+
 </RelativeLayout>

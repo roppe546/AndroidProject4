@@ -62,7 +62,7 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         messageText.setText(message.getMessage());
 
         // Image
-        image.setImageDrawable(message.getImage());
+        image.setImageBitmap(message.getImage());
 
         return convertView;
     }

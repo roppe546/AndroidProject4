@@ -1,5 +1,6 @@
 package com.example.robin.androidproject4.model;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
 import java.util.Date;
@@ -13,7 +14,7 @@ public class Message {
     private String message;
     // image variable in case message has an image
     // TODO: Should probably be URI to file stored in cloud
-    private Drawable image;
+    private Bitmap image;
 
     /**
      * Constructor for messages without image attached.
@@ -35,7 +36,7 @@ public class Message {
      * @param message   receiver of message
      * @param image     image attached to message
      */
-    public Message(String sender, String message, Drawable image) {
+    public Message(String sender, String message, Bitmap image) {
         this.sender = sender;
         this.timestamp = new Date();
         this.message = message;
@@ -66,11 +67,11 @@ public class Message {
         this.message = message;
     }
 
-    public Drawable getImage() {
+    public Bitmap getImage() {
         return image;
     }
 
-    public void setImage(Drawable image) {
+    public void setImage(Bitmap image) {
         this.image = image;
     }
 

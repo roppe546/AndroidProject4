@@ -3,6 +3,9 @@ package com.example.robin.androidproject4.view;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -22,9 +25,14 @@ import android.widget.Toast;
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Message;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
+    private final int CHOOSE_IMAGE = 1000;
+    private Bitmap selectedImage = null;
+
     private ArrayList<Message> history;
 
     private SharedPreferences pref;
@@ -59,7 +67,7 @@ public class ChatActivity extends AppCompatActivity {
         for (int i = 0; i < 5; i++) {
             history.add(new Message("Sender name", "Can you hear me?"));
         }
-        history.add(new Message("Sender name", "Can you see the image? (Doesn't work in emulator!)", getResources().getDrawable(R.drawable.ic_account_square_gray)));
+//        history.add(new Message("Sender name", "Can you see the image? (Doesn't work in emulator!)", getResources().getDrawable(R.drawable.ic_account_square_gray)));
 
         chatHistoryAdapter = new ChatHistoryAdapter(this, history);
         chatHistory.setAdapter(chatHistoryAdapter);
@@ -114,7 +122,48 @@ public class ChatActivity extends AppCompatActivity {
             Log.i("Chat", "Gallery button clicked");
 
             Intent picImage = Intent.createChooser(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), getString(R.string.chat_choose_image_text));
-            startActivity(picImage);
+            startActivityForResult(picImage, CHOOSE_IMAGE);
+        }
+    }
+
+    /**
+     * Callback method which is called when a user chooses an image from
+     * the gallery to attach to a message.
+     *
+     * @param requestCode   the request code which was used
+     * @param resultCode    whether the action finished successfully
+     * @param data          data that was returned with the result (in our case the picture)
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.i("Chat", "Result from activity with request code: " + requestCode);
+
+        switch (requestCode) {
+            case CHOOSE_IMAGE :
+                if (data != null) {
+                    Log.i("Chat", "Image was chosen");
+
+                    try {
+                        Uri uriToImage = data.getData();
+                        InputStream imageStream = getContentResolver().openInputStream(uriToImage);
+                        selectedImage = BitmapFactory.decodeStream(imageStream);
+                        // Set icon in message field to give feedback an image is attached
+
+                        Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
+                        img.setBounds(0, 0, 50, 50);
+                        textField.setCompoundDrawables(null, null, img, null);
+
+//                        textField.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_attach_file_black_48dp, 0);
+                    }
+                    catch (FileNotFoundException e) {
+                        Log.i("Chat", "File inputstream couldn't be read.");
+                        Toast.makeText(getApplicationContext(), getString(R.string.chat_error_could_not_read_image), Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                break;
         }
     }
 
@@ -128,10 +177,21 @@ public class ChatActivity extends AppCompatActivity {
                 return;
             }
 
-            history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString()));
+            // TODO: Send to server instead of doing it locally
+            // No image was selected
+            if (selectedImage == null) {
+                history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString()));
+            }
+            // Image was selected
+            else {
+                history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString(), selectedImage));
+                // Set image to null again so it won't be sent next time
+                selectedImage = null;
+            }
+
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
-            // TODO: Send to server instead of doing it locally
+
         }
     }
 
@@ -154,7 +214,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 catch (ActivityNotFoundException e) {
                     // No image viewer found
-                    Toast.makeText(getApplicationContext(), R.string.chat_open_image_fail, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.chat_error_no_gallery_app_found, Toast.LENGTH_LONG).show();
                 }
             }
         }
