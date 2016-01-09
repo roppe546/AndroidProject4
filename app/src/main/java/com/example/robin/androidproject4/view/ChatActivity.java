@@ -185,6 +185,8 @@ public class ChatActivity extends AppCompatActivity {
             // Image was selected
             else {
                 history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString(), selectedImage));
+                // Clear attachment icon from text field
+                textField.setCompoundDrawables(null, null, null, null);
                 // Set image to null again so it won't be sent next time
                 selectedImage = null;
             }
