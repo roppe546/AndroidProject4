@@ -1,17 +1,17 @@
 package com.example.robin.androidproject4.model;
 
-import android.graphics.drawable.Drawable;
+import android.net.Uri;
 
 /**
  * Created by robin on 6/1/16.
  */
 public class Contact {
     private String username;
-    private Drawable profilePicture;
+    private Uri profilePictureUri;
 
-    public Contact(String username, Drawable profilePicture) {
+    public Contact(String username, Uri profilePictureUri) {
         this.username = username;
-        this.profilePicture = profilePicture;
+        this.profilePictureUri = profilePictureUri;
     }
 
     public String getUsername() {
@@ -22,11 +22,7 @@ public class Contact {
         this.username = username;
     }
 
-    public Drawable getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(Drawable profilePicture) {
-        this.profilePicture = profilePicture;
+    public Uri getProfilePictureUri() {
+        return profilePictureUri;
     }
 }

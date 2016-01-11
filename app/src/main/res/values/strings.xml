@@ -5,7 +5,7 @@
     <!-- Strings related to drop down menu -->
     <string name="menu_add_contact_text">Add contact</string>
     <string name="menu_settings_text">Settings</string>
-    <string name="menu_logout_text">Log out</string>
+    <string name="menu_logout_text">Sign out</string>
 
     <!-- Strings related to contact list -->
     <string name="contact_list_last_received_time">%1$d-%2$02d-%3$02d %4$02d:%5$02d</string>

@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Account;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -49,7 +50,6 @@ public class LoginActivity extends AppCompatActivity {
 
         // Configure Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        // TODO: SECOND ARGUMENT SHOULD PROBABLY NOT BE NULL
         mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
     }
 
@@ -73,17 +73,19 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleSignInResult(GoogleSignInResult result) {
-        Log.i("ASDASD", "handleSignInResult: " + result.isSuccess());
+        Log.i("SignIn", "handleSignInResult: " + result.isSuccess());
 
         if (result.isSuccess()) {
             // Sign in succeeded
             GoogleSignInAccount account = result.getSignInAccount();
+            Account.setAccount(account);
 
             // Add logged in user to shared preferences
             try {
                 SharedPreferences.Editor editor = pref.edit();
                 editor.putString("loggedInUser", account.getDisplayName());
                 editor.putString("loggedInUserEmail", account.getEmail());
+                editor.putString("loggedInUserId", account.getId());
                 editor.putString("loggedInUserIdToken", account.getIdToken());
                 editor.commit();
             }

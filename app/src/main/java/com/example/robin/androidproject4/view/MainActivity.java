@@ -15,18 +15,28 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Account;
 import com.example.robin.androidproject4.model.Contact;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     // TODO: Use real instead of dummy data
-    private ArrayList<Contact> DUMMY_CONTACTS;
+    private ArrayList<Contact> contacts;
 
     private SharedPreferences pref;
 
     private ContactListAdapter contactListAdapter;
     private ListView contactList;
+
+    // Google Log-in
+    GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,14 +52,19 @@ public class MainActivity extends AppCompatActivity {
 
             // Populate list view
             // TODO: Remove dummy data
-            DUMMY_CONTACTS = new ArrayList<>();
+            contacts = new ArrayList<>();
             for (int i = 0; i < 15; i++) {
-                DUMMY_CONTACTS.add(new Contact("Contact " + (i + 1), getResources().getDrawable(R.drawable.ic_account_square_gray)));
+                // TODO: Use contacts URI for image instead of Account (logged in user)
+                contacts.add(new Contact("Contact " + (i + 1), Account.getAccount().getPhotoUrl()));
             }
-            contactListAdapter = new ContactListAdapter(this, DUMMY_CONTACTS);
+            contactListAdapter = new ContactListAdapter(this, contacts);
             contactList.setAdapter(contactListAdapter);
             contactList.setOnItemClickListener(new ContactSelectedListener());
         }
+
+        // Configure Google Sign-In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API, gso).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -85,18 +100,31 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.menu_logout :
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
-                Log.i("Login", "Logged out (main)");
 
-                // Clear logged in user from shared preferences
-                SharedPreferences.Editor editor = pref.edit();
-                editor.clear();
-                editor.apply();
+                // Sign out from Google
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(Status status) {
+                                if (status.isSuccess()) {
+                                    Log.i("Login", "Logged out (main)");
 
-                // Send back to login activity
-                Intent login = new Intent(this, LoginActivity.class);
-                login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(login);
-                this.finish();
+                                    // Clear logged in user from shared preferences
+                                    SharedPreferences.Editor editor = pref.edit();
+                                    editor.clear();
+                                    editor.apply();
+
+                                    // Send back to login activity
+                                    Intent login = new Intent(getApplicationContext(), LoginActivity.class);
+                                    login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(login);
+                                    finish();
+                                }
+                            }
+                        }
+                );
+
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -118,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         return true;
     }
+
 
     private class ContactSelectedListener implements AdapterView.OnItemClickListener {
         @Override
