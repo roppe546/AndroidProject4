@@ -142,12 +142,17 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = pref.edit();
                         editor.clear();
                         editor.apply();
+
+                        Account.setAccount(null);
                     }
                 });
     }
 
     private boolean checkIfLoggedIn() {
-        if (Account.getAccount() == null) {
+        try {
+            Account.getAccount().getId();
+        }
+        catch (NullPointerException e) {
             Log.i("Login", "Not logged in, redirect to login activity");
 
             // Clear logged in user from shared preferences

@@ -96,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
 
             Intent main = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(main);
+            this.finish();
         }
         else {
             // Sign in failed
