@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Clear logged in user from shared preferences
                 SharedPreferences.Editor editor = pref.edit();
-                editor.remove("loggedInUser");
+                editor.clear();
                 editor.apply();
 
                 // Send back to login activity
