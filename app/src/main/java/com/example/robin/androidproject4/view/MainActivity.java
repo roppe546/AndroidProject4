@@ -133,10 +133,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkIfLoggedIn() {
-        String loggedInUser = pref.getString("loggedInUser", null);
-
-        if (loggedInUser == null) {
+        if (Account.getAccount() == null) {
             Log.i("Login", "Not logged in, redirect to login activity");
+
+            // Clear logged in user from shared preferences
+            SharedPreferences.Editor editor = pref.edit();
+            editor.clear();
+            editor.apply();
+
             Intent login = new Intent(this, LoginActivity.class);
             startActivity(login);
             this.finish();

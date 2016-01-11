@@ -80,6 +80,8 @@ public class LoginActivity extends AppCompatActivity {
             GoogleSignInAccount account = result.getSignInAccount();
             Account.setAccount(account);
 
+            Account.setAccount(account);
+
             // Add logged in user to shared preferences
             try {
                 SharedPreferences.Editor editor = pref.edit();
