@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -26,7 +25,6 @@ import android.widget.Toast;
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Message;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -94,8 +92,7 @@ public class ChatActivity extends AppCompatActivity {
         chatHistory.setOnItemClickListener(new ChatMessageClickedListener());
 
         // Configure Google Sign-In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API).build();
     }
 
 
@@ -133,27 +130,29 @@ public class ChatActivity extends AppCompatActivity {
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
 
                 // Sign out from Google
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                        new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(Status status) {
-                                if (status.isSuccess()) {
-                                    Log.i("Login", "Logged out (main)");
+                if (mGoogleApiClient.isConnected()) {
+                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                            new ResultCallback<Status>() {
+                                @Override
+                                public void onResult(Status status) {
+                                    if (status.isSuccess()) {
+                                        Log.i("Login", "Logged out (main)");
 
-                                    // Clear logged in user from shared preferences
-                                    SharedPreferences.Editor editor = pref.edit();
-                                    editor.clear();
-                                    editor.apply();
-
-                                    // Send back to login activity
-                                    Intent login = new Intent(getApplicationContext(), LoginActivity.class);
-                                    login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(login);
-                                    finish();
+                                        // Clear logged in user from shared preferences
+                                        SharedPreferences.Editor editor = pref.edit();
+                                        editor.clear();
+                                        editor.apply();
+                                    }
                                 }
                             }
-                        }
-                );
+                    );
+                }
+
+                // Send back to login activity
+                Intent login = new Intent(getApplicationContext(), LoginActivity.class);
+                login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(login);
+                finish();
             case android.R.id.home:
                 Log.i("ActionMenu", "Selected back arrow in menu (chat)");
                 this.finish();

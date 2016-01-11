@@ -78,7 +78,6 @@ public class LoginActivity extends AppCompatActivity {
         if (result.isSuccess()) {
             // Sign in succeeded
             GoogleSignInAccount account = result.getSignInAccount();
-            Account.setAccount(account);
 
             Account.setAccount(account);
 
@@ -97,8 +96,6 @@ public class LoginActivity extends AppCompatActivity {
 
             Intent main = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(main);
-
-            finish();
         }
         else {
             // Sign in failed

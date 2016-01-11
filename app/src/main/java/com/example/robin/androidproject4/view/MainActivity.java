@@ -17,9 +17,7 @@ import android.widget.ListView;
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
 import com.example.robin.androidproject4.model.Contact;
-import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -60,11 +58,10 @@ public class MainActivity extends AppCompatActivity {
             contactListAdapter = new ContactListAdapter(this, contacts);
             contactList.setAdapter(contactListAdapter);
             contactList.setOnItemClickListener(new ContactSelectedListener());
-        }
 
-        // Configure Google Sign-In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API, gso).addApi(AppIndex.API).build();
+            // Configure Google Sign-In
+            mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API).build();
+        }
     }
 
     @Override
@@ -102,34 +99,51 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
 
                 // Sign out from Google
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                        new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(Status status) {
-                                if (status.isSuccess()) {
-                                    Log.i("Login", "Logged out (main)");
+                signOut();
+//                if (mGoogleApiClient.isConnected()) {
+//                    Log.i("Login", "Using shit method");
+//                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+//                            new ResultCallback<Status>() {
+//                                @Override
+//                                public void onResult(Status status) {
+//                                    if (status.isSuccess()) {
+//                                        Log.i("Login", "Logged out (main)");
+//
+//                                        // Clear logged in user from shared preferences
+//                                        SharedPreferences.Editor editor = pref.edit();
+//                                        editor.clear();
+//                                        editor.apply();
+//                                    }
+//                                }
+//                            }
+//                    );
+//                }
 
-                                    // Clear logged in user from shared preferences
-                                    SharedPreferences.Editor editor = pref.edit();
-                                    editor.clear();
-                                    editor.apply();
-
-                                    // Send back to login activity
-                                    Intent login = new Intent(getApplicationContext(), LoginActivity.class);
-                                    login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(login);
-                                    finish();
-                                }
-                            }
-                        }
-                );
-
-
+                // Send back to login activity
+                Intent login = new Intent(getApplicationContext(), LoginActivity.class);
+                login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(login);
+                finish();
             default:
                 return super.onOptionsItemSelected(item);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Log.i("Login", "Logged out (main)");
+
+                        // Clear logged in user from shared preferences
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.clear();
+                        editor.apply();
+                    }
+                });
     }
 
     private boolean checkIfLoggedIn() {
