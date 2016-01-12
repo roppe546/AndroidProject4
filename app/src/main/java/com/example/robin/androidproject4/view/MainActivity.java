@@ -100,24 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // Sign out from Google
                 signOut();
-//                if (mGoogleApiClient.isConnected()) {
-//                    Log.i("Login", "Using shit method");
-//                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-//                            new ResultCallback<Status>() {
-//                                @Override
-//                                public void onResult(Status status) {
-//                                    if (status.isSuccess()) {
-//                                        Log.i("Login", "Logged out (main)");
-//
-//                                        // Clear logged in user from shared preferences
-//                                        SharedPreferences.Editor editor = pref.edit();
-//                                        editor.clear();
-//                                        editor.apply();
-//                                    }
-//                                }
-//                            }
-//                    );
-//                }
 
                 // Send back to login activity
                 Intent login = new Intent(getApplicationContext(), LoginActivity.class);
@@ -132,18 +114,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signOut() {
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient)
+                .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        Log.i("Login", "Logged out (main)");
+                        if (status.isSuccess()) {
+                            Log.i("Login", "Logged out (main)");
 
-                        // Clear logged in user from shared preferences
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.clear();
-                        editor.apply();
+                            // Clear logged in user from shared preferences
+                            SharedPreferences.Editor editor = pref.edit();
+                            editor.clear();
+                            editor.apply();
 
-                        Account.setAccount(null);
+                            Account.setAccount(null);
+                        }
                     }
                 });
     }

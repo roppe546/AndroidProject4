@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Account;
 import com.example.robin.androidproject4.model.Message;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -130,23 +131,7 @@ public class ChatActivity extends AppCompatActivity {
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
 
                 // Sign out from Google
-                if (mGoogleApiClient.isConnected()) {
-                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                            new ResultCallback<Status>() {
-                                @Override
-                                public void onResult(Status status) {
-                                    if (status.isSuccess()) {
-                                        Log.i("Login", "Logged out (main)");
-
-                                        // Clear logged in user from shared preferences
-                                        SharedPreferences.Editor editor = pref.edit();
-                                        editor.clear();
-                                        editor.apply();
-                                    }
-                                }
-                            }
-                    );
-                }
+                signOut();
 
                 // Send back to login activity
                 Intent login = new Intent(getApplicationContext(), LoginActivity.class);
@@ -164,6 +149,24 @@ public class ChatActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        if (status.isSuccess()) {
+                            Log.i("Login", "Logged out (main)");
+
+                            // Clear logged in user from shared preferences
+                            SharedPreferences.Editor editor = pref.edit();
+                            editor.clear();
+                            editor.apply();
+
+                            Account.setAccount(null);
+                        }
+                    }
+                });
+    }
 
     /**
      * Class used for handling clicks to the camera button.
