@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
+import com.example.robin.androidproject4.model.Communicator;
 import com.example.robin.androidproject4.model.Contact;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -25,10 +26,9 @@ import com.google.android.gms.common.api.Status;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    // TODO: Use real instead of dummy data
-    private ArrayList<Contact> contacts;
-
     private SharedPreferences pref;
+
+    private ArrayList<Contact> contacts;
 
     private ContactListAdapter contactListAdapter;
     private ListView contactList;
@@ -49,12 +49,9 @@ public class MainActivity extends AppCompatActivity {
             contactList = (ListView) findViewById(R.id.contactListView);
 
             // Populate list view
-            // TODO: Remove dummy data
             contacts = new ArrayList<>();
-            for (int i = 0; i < 15; i++) {
-                // TODO: Use contacts URI for image instead of Account (logged in user)
-                contacts.add(new Contact("Contact " + (i + 1), Account.getAccount().getPhotoUrl()));
-            }
+            contacts = Communicator.makeGetRequest("http://192.168.0.11:60630/api/users?email=" + pref.getString("loggedInUserEmail", null));
+
             contactListAdapter = new ContactListAdapter(this, contacts);
             contactList.setAdapter(contactListAdapter);
             contactList.setOnItemClickListener(new ContactSelectedListener());
