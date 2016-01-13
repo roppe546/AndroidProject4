@@ -8,10 +8,12 @@ import java.util.Date;
  * Created by robin on 7/1/16.
  */
 public class Message {
+    private int id;     // can be used if we want to implement message editing later
     private String sender;
     private Date timestamp;
     private String message;
     private Uri imageUri;
+
 
     /**
      * Constructor for messages without image attached.

@@ -319,6 +319,7 @@ public class Communicator {
         }
 
         private Message getMessage(XmlPullParser xpp) {
+            int id = -1;        // can be used if we want to implement message editing later
             String sender = null;
             Date timestamp = null;
             String message = null;
@@ -330,6 +331,13 @@ public class Communicator {
                 while (eventType != XmlPullParser.END_TAG) {
                     switch (eventType) {
                         case XmlPullParser.START_TAG:
+                            if (xpp.getName().equals("Id")) {
+                                if (xpp.next() == XmlPullParser.TEXT) {
+                                    Log.i("PARSE", "Id tag found in Message: " + xpp.getText());
+                                    id = Integer.parseInt(xpp.getText());
+                                    xpp.nextTag();
+                                }
+                            }
                             if (xpp.getName().equals("Email")) {
                                 if (xpp.next() == XmlPullParser.TEXT) {
                                     Log.i("PARSE", "Email tag found in Message: " + xpp.getText());

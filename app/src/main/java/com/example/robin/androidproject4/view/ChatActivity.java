@@ -90,6 +90,9 @@ public class ChatActivity extends AppCompatActivity {
         chatHistory.setAdapter(chatHistoryAdapter);
         chatHistory.setOnItemClickListener(new ChatMessageClickedListener());
 
+        // Scroll to bottom of chat
+        chatHistory.setSelection(chatHistory.getCount() - 1);
+
         // Configure Google Sign-In
         mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API).build();
     }

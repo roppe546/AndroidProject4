@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Contact;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -45,7 +46,7 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
 
         // Set fields
         // Profile picture
-//        new ProfilePictureLoadTask(contact.getProfilePictureUri(), profilePicture).execute();
+        Picasso.with(getContext()).load(contact.getProfilePictureUri().toString()).into(profilePicture);
 
         // Username
         username.setText(contact.getUsername());
@@ -57,39 +58,5 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
         lastMessageReceived.setText(stringDate);
 
         return convertView;
-    }
-
-
-    public class ProfilePictureLoadTask extends AsyncTask<Void, Void, Bitmap> {
-        private Uri uri;
-        private ImageView imageView;
-
-        public ProfilePictureLoadTask(Uri uri, ImageView imageView) {
-            this.uri = uri;
-            this.imageView = imageView;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            try {
-                URL urlConnection = new URL(uri.toString());
-                HttpURLConnection connection = (HttpURLConnection) urlConnection.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                Bitmap picture = BitmapFactory.decodeStream(input);
-                return picture;
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            super.onPostExecute(result);
-            imageView.setImageBitmap(result);
-        }
     }
 }
