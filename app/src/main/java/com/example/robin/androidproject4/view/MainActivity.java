@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Populate list view
             contacts = new ArrayList<>();
-            contacts = Communicator.makeGetRequest("http://192.168.0.11:60630/api/users?email=" + pref.getString("loggedInUserEmail", null));
+            contacts = Communicator.getContactsRequest(pref.getString("loggedInUserEmail", null));
 
             contactListAdapter = new ContactListAdapter(this, contacts);
             contactList.setAdapter(contactListAdapter);

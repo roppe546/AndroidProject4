@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.widget.EditText;
 
 import com.example.robin.androidproject4.R;
+import com.example.robin.androidproject4.model.Communicator;
 
 /**
  * Created by robin on 8/1/16.
@@ -39,7 +40,8 @@ public class AddContactDialog extends DialogFragment {
 
                         if (email.getText().length() > 0) {
                             Log.i("ContactDialog", "Email string not empty, contacting server");
-                            // TODO: Contact back end to add user
+                            // TODO: Contact back end to add user, don't use hard coded data
+                            Communicator.addNewContactRequest("foo@example.com", "bar@example.com");
                         }
                     }
                 })
