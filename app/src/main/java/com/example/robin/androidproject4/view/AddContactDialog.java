@@ -15,10 +15,21 @@ import com.example.robin.androidproject4.model.Communicator;
 /**
  * Created by robin on 8/1/16.
  */
-// TODO: Need to figure out how to get data from email field!
 public class AddContactDialog extends DialogFragment {
+    /**
+     * This interface is used to retrieve data from from this DialogFragment from
+     * the parent activity.
+     */
+    public interface AddContactDialogListener {
+        void onFinishAddContactDialog(boolean success);
+    }
+
+    private String loggedInUser;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        loggedInUser = getArguments().getString("loggedInUserEmail", null);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -35,13 +46,18 @@ public class AddContactDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int id) {
                         Log.i("ContactDialog", "Add button clicked");
 
-                        //
+                        // Get field that holds entered email
                         EditText email = (EditText) AddContactDialog.this.getDialog().findViewById(R.id.dialog_contact_email);
 
                         if (email.getText().length() > 0) {
                             Log.i("ContactDialog", "Email string not empty, contacting server");
-                            // TODO: Contact back end to add user, don't use hard coded data
-                            Communicator.addNewContactRequest("foo@example.com", "bar@example.com");
+
+                            // Add to back end
+                            Communicator.addNewContactRequest(loggedInUser, email.getText().toString());
+
+                            // Return success to activity
+                            AddContactDialogListener listener = (AddContactDialogListener) getActivity();
+                            listener.onFinishAddContactDialog(true);
                         }
                     }
                 })

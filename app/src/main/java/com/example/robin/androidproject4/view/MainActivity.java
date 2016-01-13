@@ -25,7 +25,7 @@ import com.google.android.gms.common.api.Status;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddContactDialog.AddContactDialogListener {
     private SharedPreferences pref;
 
     private ArrayList<Contact> contacts;
@@ -85,6 +85,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_add_contact :
                 Log.i("ActionMenu", "Selected Add Contact in menu (main)");
                 DialogFragment addContactDialog = new AddContactDialog();
+
+                // Send logged in user as argument to fragment
+                Bundle arguments = new Bundle();
+                arguments.putString("loggedInUserEmail", pref.getString("loggedInUserEmail", null));
+                addContactDialog.setArguments(arguments);
+
                 addContactDialog.show(getFragmentManager(), "add_contact");
                 break;
             case R.id.menu_settings :
@@ -108,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFinishAddContactDialog(boolean success) {
+        if (success) {
+            Log.i("ContactList", "Successfully added new contact, refreshing.");
+
+            // Clear previous contacts and get fresh contact data
+            ArrayList<Contact> temp = Communicator.getContactsRequest(pref.getString("loggedInUserEmail", null));
+            if (temp != null) {
+                contacts.clear();
+                contacts.addAll(temp);
+                contactListAdapter.notifyDataSetChanged();
+            }
+        }
     }
 
     private void signOut() {
@@ -155,8 +176,9 @@ public class MainActivity extends AppCompatActivity {
     private class ContactSelectedListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Log.i("ContactList", "Contact " + position + " selected");
+            Log.i("ContactList", "Contact " + contacts.get(position).getUsername() + " selected");
             Intent chat = new Intent(getApplicationContext(), ChatActivity.class);
+            chat.putExtra("contactEmail", contacts.get(position).getUsername());
             startActivity(chat);
         }
     }

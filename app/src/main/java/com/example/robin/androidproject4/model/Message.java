@@ -1,7 +1,6 @@
 package com.example.robin.androidproject4.model;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.net.Uri;
 
 import java.util.Date;
 
@@ -12,9 +11,7 @@ public class Message {
     private String sender;
     private Date timestamp;
     private String message;
-    // image variable in case message has an image
-    // TODO: Should probably be URI to file stored in cloud
-    private Bitmap image;
+    private Uri imageUri;
 
     /**
      * Constructor for messages without image attached.
@@ -22,11 +19,11 @@ public class Message {
      * @param sender    sender of message
      * @param message   receiver of message
      */
-    public Message(String sender, String message) {
+    public Message(String sender, Date timestamp, String message) {
         this.sender = sender;
-        this.timestamp = new Date();
+        this.timestamp = timestamp;
         this.message = message;
-        this.image = null;
+        this.imageUri = null;
     }
 
     /**
@@ -36,11 +33,11 @@ public class Message {
      * @param message   receiver of message
      * @param image     image attached to message
      */
-    public Message(String sender, String message, Bitmap image) {
+    public Message(String sender, Date timestamp, String message, Uri image) {
         this.sender = sender;
-        this.timestamp = new Date();
+        this.timestamp = timestamp;
         this.message = message;
-        this.image = image;
+        this.imageUri = image;
     }
 
     public String getSender() {
@@ -67,16 +64,16 @@ public class Message {
         this.message = message;
     }
 
-    public Bitmap getImage() {
-        return image;
+    public Uri getImageUri() {
+        return imageUri;
     }
 
-    public void setImage(Bitmap image) {
-        this.image = image;
+    public void setImageUri(Uri imageUri) {
+        this.imageUri = imageUri;
     }
 
     public boolean hasImage() {
-        if (image == null)
+        if (imageUri == null)
             return false;
 
         return true;

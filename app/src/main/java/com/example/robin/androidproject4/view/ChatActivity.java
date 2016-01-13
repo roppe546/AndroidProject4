@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
+import com.example.robin.androidproject4.model.Communicator;
 import com.example.robin.androidproject4.model.Message;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,6 +34,7 @@ import com.google.android.gms.common.api.Status;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ChatActivity extends AppCompatActivity {
     // Request codes
@@ -82,11 +84,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Populate chat history
         history = new ArrayList<>();
-        // TODO: Get history from server, don't use dummy data
-        for (int i = 0; i < 5; i++) {
-            history.add(new Message("Sender name", "Can you hear me?"));
-        }
-//        history.add(new Message("Sender name", "Can you see the image? (Doesn't work in emulator!)", getResources().getDrawable(R.drawable.ic_account_square_gray)));
+        history = Communicator.getChatHistoryRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"));
 
         chatHistoryAdapter = new ChatHistoryAdapter(this, history);
         chatHistory.setAdapter(chatHistoryAdapter);
@@ -302,11 +300,13 @@ public class ChatActivity extends AppCompatActivity {
             // TODO: Send to server instead of doing it locally
             // No image was selected
             if (selectedImage == null) {
-                history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString()));
+                boolean success = Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString());
+                Log.i("Chat", "Success: " + success);
+                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString()));
             }
             // Image was selected
             else {
-                history.add(new Message(pref.getString("loggedInUser", null), textField.getText().toString(), selectedImage));
+//                history.add(new Message(pref.getString("loggedInUser", null), new Date(), textField.getText().toString(), selectedImage));
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
 

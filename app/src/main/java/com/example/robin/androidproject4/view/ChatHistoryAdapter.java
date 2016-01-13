@@ -2,7 +2,6 @@ package com.example.robin.androidproject4.view;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,8 @@ import android.widget.TextView;
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Message;
 
-import java.util.Calendar;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -47,22 +47,15 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         sender.setText(message.getSender());
 
         // Timestamp
-        // TODO: Use timestamps for when message was sent instead of current time
-        Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int date = c.get(Calendar.DAY_OF_MONTH);
-        int hour = c.get(Calendar.HOUR_OF_DAY);
-        int minute = c.get(Calendar.MINUTE);
-        Resources res = getContext().getResources();
-        String receivedText = String.format(res.getString(R.string.chat_history_received_time), year, (month + 1), date, hour, minute);
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String receivedText = df.format(message.getTimestamp());
         timestamp.setText(receivedText);
 
         // Message
         messageText.setText(message.getMessage());
 
         // Image
-        image.setImageBitmap(message.getImage());
+//        image.setImageBitmap(message.getImage());
 
         return convertView;
     }

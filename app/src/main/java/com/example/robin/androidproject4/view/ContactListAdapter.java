@@ -45,7 +45,7 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
 
         // Set fields
         // Profile picture
-        new ProfilePictureLoadTask(contact.getProfilePictureUri(), profilePicture).execute();
+//        new ProfilePictureLoadTask(contact.getProfilePictureUri(), profilePicture).execute();
 
         // Username
         username.setText(contact.getUsername());
