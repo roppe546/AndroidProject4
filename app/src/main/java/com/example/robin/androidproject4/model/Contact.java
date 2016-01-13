@@ -37,4 +37,13 @@ public class Contact {
     public Uri getProfilePictureUri() {
         return profilePictureUri;
     }
+
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "username='" + username + '\'' +
+                ", lastReceivedTimestamp=" + lastReceivedTimestamp +
+                ", profilePictureUri=" + profilePictureUri +
+                '}';
+    }
 }

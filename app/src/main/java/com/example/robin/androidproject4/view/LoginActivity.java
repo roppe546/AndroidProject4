@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
+import com.example.robin.androidproject4.model.Communicator;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -92,6 +93,12 @@ public class LoginActivity extends AppCompatActivity {
             }
             catch (NullPointerException e) {
                 e.printStackTrace();
+            }
+
+            // Register with back end (if new member)
+            boolean success = Communicator.registerUser(account.getEmail(), account.getPhotoUrl());
+            if (success) {
+                Log.i("Login123", "Login succeeded");
             }
 
             Intent main = new Intent(getApplicationContext(), MainActivity.class);

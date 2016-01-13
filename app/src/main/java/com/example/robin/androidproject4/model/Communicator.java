@@ -28,6 +28,22 @@ import java.util.concurrent.ExecutionException;
 public class Communicator {
     private static final String API_ENDPOINT = "http://192.168.0.11:60630/api/";
 
+    public static boolean registerUser(String userEmail, Uri photoUri) {
+        try {
+            if (photoUri == null) {
+                // No profile photo
+                return new doPostNewUserRequest().execute(API_ENDPOINT + "users", userEmail, "").get();
+            }
+            else {
+                // Photo exists
+                return new doPostNewUserRequest().execute(API_ENDPOINT + "users", userEmail, photoUri.toString()).get();
+            }
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
     public static ArrayList<Contact> getContactsRequest(String userEmail) {
         try {
             return new doGetContactsRequest().execute(API_ENDPOINT + "users?email=" + userEmail).get();
@@ -74,6 +90,63 @@ public class Communicator {
         catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private static class doPostNewUserRequest extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            HttpURLConnection http = null;
+
+            try {
+                // Put request in JSON
+                JSONObject data = new JSONObject();
+                String email = params[1];
+                String photoUri = params[2];
+                data.put("Email", email);
+                data.put("ImageUrl", photoUri);
+
+                if (!(data.length() > 0)) {
+                    // JSON object empty, return
+                    return false;
+                }
+
+                // Create connection
+                URL url = new URL(params[0]);
+                http = (HttpURLConnection) url.openConnection();
+                http.setRequestMethod("POST");
+                http.setRequestProperty("Content-Type", "application/json");
+                http.setDoInput(true);
+                http.setDoOutput(true);
+                http.setUseCaches(false);
+                http.connect();
+
+                // Send data to back end
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(http.getOutputStream(), "UTF-8"));
+                writer.write(String.valueOf(data));
+                writer.close();
+
+                // Receive result
+                if (http.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    Log.i("Communicator", "User was successfully added in back end");
+                    return true;
+                }
+                else {
+                    Log.i("Communicator", "User was NOT added successfully added in back end");
+                    return false;
+                }
+            }
+            catch (Exception e) {
+                // Could not add contact, returning
+                e.printStackTrace();
+                return false;
+            }
+            finally {
+                if (http != null) {
+                    http.disconnect();
+                }
+            }
         }
     }
 
@@ -183,9 +256,9 @@ public class Communicator {
                     eventType = xpp.next();
                 }
 
+                Log.i("PARSE", "End friend");
                 Log.i("PARSE", "Creating new contact object");
                 newContact = new Contact(email, lastReceivedDate, imageUri);
-                Log.i("PARSE", "End friend");
             }
             catch (XmlPullParserException e) {
                 e.printStackTrace();
