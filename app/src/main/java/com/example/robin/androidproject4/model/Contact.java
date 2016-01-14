@@ -9,12 +9,12 @@ import java.util.Date;
  */
 public class Contact {
     private String username;
-    private Date lastReceivedTimestamp;
+    private String status;
     private Uri profilePictureUri;
 
-    public Contact(String username, Date lastReceivedTimestamp, Uri profilePictureUri) {
+    public Contact(String username, String status, Uri profilePictureUri) {
         this.username = username;
-        this.lastReceivedTimestamp = lastReceivedTimestamp;
+        this.status = status;
         this.profilePictureUri = profilePictureUri;
     }
 
@@ -26,12 +26,12 @@ public class Contact {
         this.username = username;
     }
 
-    public Date getLastReceivedTimestamp() {
-        return lastReceivedTimestamp;
+    public String getStatus() {
+        return status;
     }
 
-    public void setLastReceivedTimestamp(Date lastReceivedTimestamp) {
-        this.lastReceivedTimestamp = lastReceivedTimestamp;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Uri getProfilePictureUri() {
@@ -42,7 +42,7 @@ public class Contact {
     public String toString() {
         return "Contact{" +
                 "username='" + username + '\'' +
-                ", lastReceivedTimestamp=" + lastReceivedTimestamp +
+                ", status=" + status +
                 ", profilePictureUri=" + profilePictureUri +
                 '}';
     }

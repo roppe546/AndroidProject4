@@ -44,6 +44,20 @@ public class Communicator {
         }
     }
 
+    public static boolean putUserRequest(String userEmail, Uri photoUri, String status) {
+        try {
+            if (photoUri == null) {
+                return new doPutUserRequest().execute(API_ENDPOINT + "users", userEmail, "", status).get();
+            }
+            else {
+                return new doPutUserRequest().execute(API_ENDPOINT + "users", userEmail, photoUri.toString(), status).get();
+            }
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
     public static ArrayList<Contact> getContactsRequest(String userEmail) {
         try {
             return new doGetContactsRequest().execute(API_ENDPOINT + "users?email=" + userEmail).get();
@@ -133,12 +147,71 @@ public class Communicator {
                     return true;
                 }
                 else {
-                    Log.i("Communicator", "User was NOT added successfully added in back end");
+                    Log.i("Communicator", "User was NOT successfully added in back end");
                     return false;
                 }
             }
             catch (Exception e) {
                 // Could not add contact, returning
+                e.printStackTrace();
+                return false;
+            }
+            finally {
+                if (http != null) {
+                    http.disconnect();
+                }
+            }
+        }
+    }
+
+    private static class doPutUserRequest extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            HttpURLConnection http = null;
+
+            try {
+                // Put request in JSON
+                JSONObject data = new JSONObject();
+                String email = params[1];
+                String imageUrl = params[2];
+                String status = params[3];
+                data.put("Email", email);
+                data.put("ImageUrl", imageUrl);
+                data.put("Status", status);
+
+                if (!(data.length() > 0)) {
+                    // JSON object empty, return
+                    return false;
+                }
+
+                // Create connection
+                URL url = new URL(params[0]);
+                http = (HttpURLConnection) url.openConnection();
+                http.setRequestMethod("PUT");
+                http.setRequestProperty("Content-Type", "application/json");
+                http.setDoInput(true);
+                http.setDoOutput(true);
+                http.setUseCaches(false);
+                http.connect();
+
+                // Send data to back end
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(http.getOutputStream(), "UTF-8"));
+                writer.write(String.valueOf(data));
+                writer.close();
+
+                // Receive result
+                if (http.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    Log.i("Communicator", "User status was successfully changed in back end");
+                    return true;
+                }
+                else {
+                    Log.i("Communicator", "User status was NOT successfully changed in back end");
+                    return false;
+                }
+            }
+            catch (Exception e) {
+                // Could not change status, returning
                 e.printStackTrace();
                 return false;
             }
@@ -214,7 +287,7 @@ public class Communicator {
         private Contact getContact(XmlPullParser xpp) {
             String email = null;
             Uri imageUri = null;
-            Date lastReceivedDate = null;
+            String status = null;
             Contact newContact = null;
 
             try {
@@ -236,17 +309,18 @@ public class Communicator {
                                     xpp.nextTag();
                                 }
                             }
-                            if (xpp.getName().equals("LastReceivedMessage")) {
+                            if (xpp.getName().equals("Status")) {
                                 if (xpp.next() == XmlPullParser.TEXT) {
-                                    Log.i("PARSE", "LastReceivedMessage tag found in Friend: " + xpp.getText());
+                                    Log.i("PARSE", "Status tag found in Friend: " + xpp.getText());
 
-                                    try {
-                                        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                                        lastReceivedDate = format.parse(xpp.getText());
-                                    }
-                                    catch (ParseException e) {
-                                        e.printStackTrace();
-                                    }
+                                    status = xpp.getText();
+//                                    try {
+//                                        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//                                        lastReceivedDate = format.parse(xpp.getText());
+//                                    }
+//                                    catch (ParseException e) {
+//                                        e.printStackTrace();
+//                                    }
                                     xpp.nextTag();
                                 }
                             }
@@ -258,7 +332,7 @@ public class Communicator {
 
                 Log.i("PARSE", "End friend");
                 Log.i("PARSE", "Creating new contact object");
-                newContact = new Contact(email, lastReceivedDate, imageUri);
+                newContact = new Contact(email, status, imageUri);
             }
             catch (XmlPullParserException e) {
                 e.printStackTrace();
@@ -312,7 +386,7 @@ public class Communicator {
                     return true;
                 }
                 else {
-                    Log.i("Communicator", "Contact was NOT added successfully added in back end");
+                    Log.i("Communicator", "Contact was NOT successfully added in back end");
                     return false;
                 }
             }
@@ -523,7 +597,7 @@ public class Communicator {
                     return true;
                 }
                 else {
-                    Log.i("Communicator", "Message was NOT added successfully sent to back end");
+                    Log.i("Communicator", "Message was NOT successfully sent to back end");
                     return false;
                 }
             }

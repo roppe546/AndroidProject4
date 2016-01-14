@@ -101,6 +101,9 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i("Login123", "Login succeeded");
             }
 
+            // Set user as logged in
+            Communicator.putUserRequest(account.getEmail(), account.getPhotoUrl(), getString(R.string.STATUS_ONLINE));
+
             Intent main = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(main);
             this.finish();

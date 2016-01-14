@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
             case R.id.menu_logout :
                 Log.i("ActionMenu", "Selected Log out in menu (main)");
 
-                // Sign out from Google
                 signOut();
 
                 // Send back to login activity
@@ -138,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
                     public void onResult(Status status) {
                         if (status.isSuccess()) {
                             Log.i("Login", "Logged out (main)");
+
+                            // Set status offline
+                            Communicator.putUserRequest(pref.getString("loggedInUserEmail", null), Account.getAccount().getPhotoUrl(), getString(R.string.STATUS_OFFLINE));
 
                             // Clear logged in user from shared preferences
                             SharedPreferences.Editor editor = pref.edit();

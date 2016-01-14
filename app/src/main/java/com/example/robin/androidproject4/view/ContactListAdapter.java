@@ -1,10 +1,6 @@
 package com.example.robin.androidproject4.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +12,6 @@ import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Contact;
 import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 /**
@@ -42,7 +33,7 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
         // Get elements in item
         ImageView profilePicture = (ImageView) convertView.findViewById(R.id.contactlist_item_profile_picture);
         TextView username = (TextView) convertView.findViewById(R.id.contactlist_item_username);
-        TextView lastMessageReceived = (TextView) convertView.findViewById(R.id.contactlist_item_last_message_received_timestamp);
+        TextView onlineStatus = (TextView) convertView.findViewById(R.id.contactlist_item_status);
 
         // Set fields
         // Profile picture
@@ -58,11 +49,9 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
         // Username
         username.setText(contact.getUsername());
 
-        // Last message received
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String stringDate = df.format(contact.getLastReceivedTimestamp());
-
-        lastMessageReceived.setText(stringDate);
+        // Online status
+        String status = contact.getStatus();
+        onlineStatus.setText(status);
 
         return convertView;
     }

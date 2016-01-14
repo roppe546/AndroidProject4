@@ -36,4 +36,9 @@
 
     <!-- Strings related to settings -->
     <string name="settings_copyright">© 2016 Peonsson and roppe546</string>
+
+    <!-- String related to user status -->
+    <string name="STATUS_ONLINE">Online</string>
+    <string name="STATUS_OFFLINE">Offline</string>
+    <string name="STATUS_BUSY">BUSY</string>
 </resources>
