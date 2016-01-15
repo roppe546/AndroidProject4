@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-
 /**
  * Created by robin on 12/1/16.
  */
@@ -652,9 +651,9 @@ public class Communicator {
 
             String blobUrl = "";
 
-            HttpURLConnection http = null;
+            HttpURLConnection http;
             DataOutputStream output = null;
-            InputStream input = null;
+            InputStream input;
             FileInputStream fileInput = null;
 
             try {

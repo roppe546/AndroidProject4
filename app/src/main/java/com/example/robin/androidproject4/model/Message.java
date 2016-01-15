@@ -30,6 +30,7 @@ public class Message {
         this.localImagePath = null;
     }
 
+
     /**
      * Constructor for messages with an image attached.
      *
@@ -44,6 +45,7 @@ public class Message {
         this.imageUri = image;
         this.localImagePath = null;
     }
+
 
     /**
      * Constructor for messages with an image attached.
@@ -60,41 +62,31 @@ public class Message {
         this.localImagePath = localImagePath;
     }
 
+
     public String getSender() {
         return sender;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
 
     public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
 
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public Uri getImageUri() {
         return imageUri;
     }
 
-    public void setImageUri(Uri imageUri) {
-        this.imageUri = imageUri;
-    }
 
     public Uri getLocalImagePath() {
         return localImagePath;
     }
+
 
     public boolean hasImage() {
         if (imageUri == null)

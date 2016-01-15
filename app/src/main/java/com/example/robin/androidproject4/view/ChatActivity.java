@@ -258,26 +258,18 @@ public class ChatActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was chosen");
 
-//                    try {
-                        // Save image to variable
-                        selectedImageUri = data.getData();
-//                        InputStream imageStream = getContentResolver().openInputStream(selectedImageUri);
-//                        selectedImage = BitmapFactory.decodeStream(imageStream);
+                    // Save image to variable
+                    selectedImageUri = data.getData();
 
-                        // Set icon in message field to give feedback an image is attached
-                        Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
-                        img.setBounds(0, 0, 50, 50);
-                        textField.setCompoundDrawables(null, null, img, null);
+                    // Set icon in message field to give feedback an image is attached
+                    Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
+                    img.setBounds(0, 0, 50, 50);
+                    textField.setCompoundDrawables(null, null, img, null);
 
-                        // Hide camera/gallery buttons and show only delete attachment button
-                        cameraButton.setVisibility(View.GONE);
-                        galleryButton.setVisibility(View.GONE);
-                        deleteAttachmentButton.setVisibility(View.VISIBLE);
-//                    }
-//                    catch (FileNotFoundException e) {
-//                        Log.i("Chat", "File inputstream couldn't be read.");
-//                        Toast.makeText(getApplicationContext(), getString(R.string.chat_error_could_not_read_image), Toast.LENGTH_LONG).show();
-//                    }
+                    // Hide camera/gallery buttons and show only delete attachment button
+                    cameraButton.setVisibility(View.GONE);
+                    galleryButton.setVisibility(View.GONE);
+                    deleteAttachmentButton.setVisibility(View.VISIBLE);
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was chosen");
@@ -492,7 +484,7 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     }
                     catch (Exception e1) {
-                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        Log.i("TEST123", "Connection broken: " + e1.getClass().getName());
                         try {
                             Thread.sleep(5000); //sleep and then try again
                         } catch (InterruptedException e) {
