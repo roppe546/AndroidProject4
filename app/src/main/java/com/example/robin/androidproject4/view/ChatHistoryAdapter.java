@@ -65,7 +65,11 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
             Picasso.with(getContext()).load(R.drawable.ic_one_pixel_transparent).into(holder.image);
         }
         else {
-            Picasso.with(getContext()).load(message.getImageUri().toString()).placeholder(R.drawable.ic_image_black_48dp).into(holder.image);
+            Picasso.with(getContext()).load(R.drawable.ic_image_black_48dp).into(holder.image);
+
+            // The below line can be used if we want to show a small thumbnail of the actual
+            // image instead of the thumbnail icon
+            // Picasso.with(getContext()).load(message.getImageUri().toString()).placeholder(R.drawable.ic_image_black_48dp).into(holder.image);
         }
 
         return convertView;

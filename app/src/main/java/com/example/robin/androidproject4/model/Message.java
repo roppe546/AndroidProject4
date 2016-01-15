@@ -48,7 +48,8 @@ public class Message {
 
 
     /**
-     * Constructor for messages with an image attached.
+     * Constructor for messages with an image attached. This constructor can be called
+     * when a message object is used only locally, i.e. not sent to the server.
      *
      * @param sender    sender of message
      * @param message   receiver of message
@@ -89,9 +90,6 @@ public class Message {
 
 
     public boolean hasImage() {
-        if (imageUri == null)
-            return false;
-
-        return true;
+        return imageUri != null;
     }
 }
