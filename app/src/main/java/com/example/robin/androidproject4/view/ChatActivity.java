@@ -4,9 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -38,6 +38,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -62,7 +63,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private Uri selectedImageUri = null;
     private Uri selectedImageRealPath = null;
-    private Bitmap selectedImage = null;
     private ArrayList<Message> history;
     private SharedPreferences pref;
 
@@ -189,19 +189,51 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+
     /**
      * Class used for handling clicks to the camera button.
+     *
+     * http://stackoverflow.com/questions/6448856/android-camera-intent-how-to-get-full-sized-photo
      */
     private class CameraButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             Log.i("Chat", "Camera button clicked");
 
-            Intent takeImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(takeImage, CAPTURE_IMAGE_REQUEST_CODE);
+            File photo = null;
+            try {
+                photo = createTempFile("picture", ".jpg");
+                photo.delete();
+            }
+            catch(Exception e) {
+                Log.i("Chat", "Can't create temporary file to store image in.");
+                Toast.makeText(getApplicationContext(), "Cant take a picture", Toast.LENGTH_LONG);
+            }
+
+            if (photo != null) {
+                // Get uri for temp file
+                selectedImageUri = Uri.fromFile(photo);
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                // Put extra information for intent so it saves image taken in location where
+                // selectedImageUri points
+                i.putExtra(MediaStore.EXTRA_OUTPUT, selectedImageUri);
+                startActivityForResult(i, CAPTURE_IMAGE_REQUEST_CODE);
+            }
         }
     }
 
+
+    private File createTempFile(String part, String ext) throws Exception {
+        File tempDir = Environment.getExternalStorageDirectory();
+        tempDir = new File(tempDir.getAbsolutePath()+"/.temp/");
+
+        if (!tempDir.exists()) {
+            tempDir.mkdir();
+        }
+
+        return File.createTempFile(part, ext, tempDir);
+    }
 
     /**
      * Class used for handling clicks to the gallery button
@@ -236,9 +268,6 @@ public class ChatActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was captured");
 
-                    // Save image to variable
-                    selectedImage = (Bitmap) data.getExtras().get("data");
-
                     // Set icon in message field to give feedback an image is attached
                     Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
                     img.setBounds(0, 0, 50, 50);
@@ -251,6 +280,9 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was taken");
+
+                    selectedImageUri = null;
+                    selectedImageRealPath = null;
                 }
 
                 break;
@@ -273,6 +305,9 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was chosen");
+
+                    selectedImageUri = null;
+                    selectedImageRealPath = null;
                 }
 
                 break;
@@ -286,7 +321,8 @@ public class ChatActivity extends AppCompatActivity {
     private class DeleteAttachmentButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            selectedImage = null;
+            selectedImageUri = null;
+            selectedImageRealPath = null;
 
             // Clear attachment icon from text field
             textField.setCompoundDrawables(null, null, null, null);
@@ -312,7 +348,6 @@ public class ChatActivity extends AppCompatActivity {
                 return;
             }
 
-            // TODO: Send to server instead of doing it locally
             if (selectedImageUri == null) {
                 // No image was selected
                 Log.i("Chat", "Image was not selected");
@@ -320,20 +355,33 @@ public class ChatActivity extends AppCompatActivity {
                 // Add locally to history
                 history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), null));
                 chatHistoryAdapter.notifyDataSetChanged();
+
+                // Send to remote server
                 Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), null);
             }
             else {
                 // Image was selected
                 Log.i("Chat", "Image was selected");
 
-                // Get real path, otherwise it will fail to find the image when uploading
-                selectedImageRealPath = getRealPath(selectedImageUri);
+                // Image taken from camera
+                if (selectedImageUri.getScheme().compareTo("file") == 0) {
+                    selectedImageRealPath = Uri.parse(selectedImageUri.getPath());
+                }
+                // Image chosen from gallery
+                else if (selectedImageUri.getScheme().compareTo("content") == 0) {
+                    // Get real path as gallery app returns a content path, otherwise it will
+                    // fail to find the image when uploading
+                    selectedImageRealPath = getRealPath(selectedImageUri);
+                }
+                Log.i("Chat", "Real path for image: " + selectedImageRealPath.toString());
 
                 // Add locally to history
                 history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
                 chatHistoryAdapter.notifyDataSetChanged();
 
+                // Send to remote server
                 Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), selectedImageRealPath);
+
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
 
@@ -343,13 +391,13 @@ public class ChatActivity extends AppCompatActivity {
                 deleteAttachmentButton.setVisibility(View.GONE);
 
                 // Set image to null again so it won't be sent next time
-                selectedImage = null;
                 selectedImageUri = null;
                 selectedImageRealPath = null;
             }
 
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
+
         }
     }
 
@@ -364,7 +412,7 @@ public class ChatActivity extends AppCompatActivity {
      * @return      a string with the real uri
      */
     private Uri getRealPath(Uri uri) {
-        String fullId = DocumentsContract.getDocumentId(selectedImageUri);
+        String fullId = DocumentsContract.getDocumentId(uri);
 
         // Split at the colon and use the second (right hand) part of the split
         String id = fullId.split(":") [1];
@@ -435,7 +483,7 @@ public class ChatActivity extends AppCompatActivity {
     private BlockingDeque queue = new LinkedBlockingDeque();
     void publishMessage(String message) {
         try {
-            Log.i("TEST123", "[q] " + message);
+            Log.i("Push", "[q] " + message);
             queue.putLast(message);
         }
         catch (InterruptedException e) {
@@ -446,10 +494,12 @@ public class ChatActivity extends AppCompatActivity {
     ConnectionFactory factory = new ConnectionFactory();
     private void setupConnectionFactory() {
         String uri = "amqp://vxoqwope:CQyPw9I5N8Hn70MjvQu0dd9lwcdnJZA0@spotted-monkey.rmq.cloudamqp.com/vxoqwope";
+
         try {
             factory.setAutomaticRecoveryEnabled(false);
             factory.setUri(uri);
-        } catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
+        }
+        catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
             e1.printStackTrace();
         }
     }
@@ -484,7 +534,7 @@ public class ChatActivity extends AppCompatActivity {
                         break;
                     }
                     catch (Exception e1) {
-                        Log.i("TEST123", "Connection broken: " + e1.getClass().getName());
+                        Log.i("Push", "Connection broken: " + e1.getClass().getName());
                         try {
                             Thread.sleep(5000); //sleep and then try again
                         } catch (InterruptedException e) {
