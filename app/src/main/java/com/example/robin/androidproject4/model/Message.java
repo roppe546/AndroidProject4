@@ -13,6 +13,7 @@ public class Message {
     private Date timestamp;
     private String message;
     private Uri imageUri;
+    private Uri localImagePath;
 
 
     /**
@@ -26,6 +27,7 @@ public class Message {
         this.timestamp = timestamp;
         this.message = message;
         this.imageUri = null;
+        this.localImagePath = null;
     }
 
     /**
@@ -40,6 +42,22 @@ public class Message {
         this.timestamp = timestamp;
         this.message = message;
         this.imageUri = image;
+        this.localImagePath = null;
+    }
+
+    /**
+     * Constructor for messages with an image attached.
+     *
+     * @param sender    sender of message
+     * @param message   receiver of message
+     * @param image     image attached to message
+     */
+    public Message(String sender, Date timestamp, String message, Uri image, Uri localImagePath) {
+        this.sender = sender;
+        this.timestamp = timestamp;
+        this.message = message;
+        this.imageUri = image;
+        this.localImagePath = localImagePath;
     }
 
     public String getSender() {
@@ -72,6 +90,10 @@ public class Message {
 
     public void setImageUri(Uri imageUri) {
         this.imageUri = imageUri;
+    }
+
+    public Uri getLocalImagePath() {
+        return localImagePath;
     }
 
     public boolean hasImage() {

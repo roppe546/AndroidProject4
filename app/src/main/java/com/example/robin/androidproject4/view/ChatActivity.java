@@ -3,11 +3,12 @@ package com.example.robin.androidproject4.view;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,15 +27,24 @@ import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
 import com.example.robin.androidproject4.model.Communicator;
 import com.example.robin.androidproject4.model.Message;
+import com.example.robin.androidproject4.model.XMLParser;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.QueueingConsumer;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class ChatActivity extends AppCompatActivity {
     // Request codes
@@ -50,12 +60,16 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton deleteAttachmentButton;
     private ImageButton sendButton;
 
+    private Uri selectedImageUri = null;
+    private Uri selectedImageRealPath = null;
     private Bitmap selectedImage = null;
     private ArrayList<Message> history;
     private SharedPreferences pref;
 
     // Google Log-in
     GoogleApiClient mGoogleApiClient;
+
+    private Thread subscribeThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +109,10 @@ public class ChatActivity extends AppCompatActivity {
 
         // Configure Google Sign-In
         mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API).build();
+
+        //TEST CODE BELOW
+        setupConnectionFactory();
+        subscribe();
     }
 
 
@@ -240,11 +258,11 @@ public class ChatActivity extends AppCompatActivity {
                 if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was chosen");
 
-                    try {
+//                    try {
                         // Save image to variable
-                        Uri uriToImage = data.getData();
-                        InputStream imageStream = getContentResolver().openInputStream(uriToImage);
-                        selectedImage = BitmapFactory.decodeStream(imageStream);
+                        selectedImageUri = data.getData();
+//                        InputStream imageStream = getContentResolver().openInputStream(selectedImageUri);
+//                        selectedImage = BitmapFactory.decodeStream(imageStream);
 
                         // Set icon in message field to give feedback an image is attached
                         Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
@@ -255,11 +273,11 @@ public class ChatActivity extends AppCompatActivity {
                         cameraButton.setVisibility(View.GONE);
                         galleryButton.setVisibility(View.GONE);
                         deleteAttachmentButton.setVisibility(View.VISIBLE);
-                    }
-                    catch (FileNotFoundException e) {
-                        Log.i("Chat", "File inputstream couldn't be read.");
-                        Toast.makeText(getApplicationContext(), getString(R.string.chat_error_could_not_read_image), Toast.LENGTH_LONG).show();
-                    }
+//                    }
+//                    catch (FileNotFoundException e) {
+//                        Log.i("Chat", "File inputstream couldn't be read.");
+//                        Toast.makeText(getApplicationContext(), getString(R.string.chat_error_could_not_read_image), Toast.LENGTH_LONG).show();
+//                    }
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was chosen");
@@ -303,15 +321,27 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             // TODO: Send to server instead of doing it locally
-            // No image was selected
-            if (selectedImage == null) {
-                boolean success = Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString());
-                Log.i("Chat", "Success: " + success);
-                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString()));
+            if (selectedImageUri == null) {
+                // No image was selected
+                Log.i("Chat", "Image was not selected");
+
+                // Add locally to history
+                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), null));
+                chatHistoryAdapter.notifyDataSetChanged();
+                Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), null);
             }
-            // Image was selected
             else {
-//                history.add(new Message(pref.getString("loggedInUser", null), new Date(), textField.getText().toString(), selectedImage));
+                // Image was selected
+                Log.i("Chat", "Image was selected");
+
+                // Get real path, otherwise it will fail to find the image when uploading
+                selectedImageRealPath = getRealPath(selectedImageUri);
+
+                // Add locally to history
+                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
+                chatHistoryAdapter.notifyDataSetChanged();
+
+                Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), selectedImageRealPath);
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
 
@@ -322,11 +352,55 @@ public class ChatActivity extends AppCompatActivity {
 
                 // Set image to null again so it won't be sent next time
                 selectedImage = null;
+                selectedImageUri = null;
+                selectedImageRealPath = null;
             }
 
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
         }
+    }
+
+    /**
+     * This method gets the real path of a selected image. Because Android 4.4 (which was used in
+     * development) has issues with getting the proper path using Uri.getPath() this was needed to
+     * make it work.
+     *
+     *  http://stackoverflow.com/questions/20067508/get-real-path-from-uri-android-kitkat-new-storage-access-framework
+     *
+     * @param uri   the uri
+     * @return      a string with the real uri
+     */
+    private Uri getRealPath(Uri uri) {
+        String fullId = DocumentsContract.getDocumentId(selectedImageUri);
+
+        // Split at the colon and use the second (right hand) part of the split
+        String id = fullId.split(":") [1];
+
+        String[] column = {
+                MediaStore.Images.Media.DATA
+        };
+
+        String sel = MediaStore.Images.Media._ID + "=?";
+
+        Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                column, sel,
+                new String[] {id},
+                null);
+
+        String filePath = "";
+
+        int columnIndex = cursor.getColumnIndex(column[0]);
+
+        if (cursor.moveToFirst()) {
+            filePath = cursor.getString(columnIndex);
+        }
+
+        cursor.close();
+
+        Log.i("Chat", "Real image uri: " + filePath);
+        return Uri.parse(filePath);
     }
 
 
@@ -344,8 +418,15 @@ public class ChatActivity extends AppCompatActivity {
                 Log.i("Chat", "Message has image attached");
 
                 Intent i = new Intent(Intent.ACTION_VIEW);
-                // TODO: Open uploaded image instead of test image (Message object might need to store URI instead of Drawable)
-                i.setDataAndType(Uri.parse("http://www.networkforgood.com/wp-content/uploads/2015/08/bigstock-Test-word-on-white-keyboard-27134336.jpg"), "image/*");
+
+                if (message.getLocalImagePath() == null) {
+                    // Image is remote
+                    i.setDataAndType(message.getImageUri(), "image/*");
+                }
+                else {
+                    // Image is local
+                    i.setDataAndType(message.getLocalImagePath(), "image/*");
+                }
 
                 try {
                     startActivity(i);
@@ -356,5 +437,71 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    // TEST CODE BELOW
+    private BlockingDeque queue = new LinkedBlockingDeque();
+    void publishMessage(String message) {
+        try {
+            Log.i("TEST123", "[q] " + message);
+            queue.putLast(message);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    ConnectionFactory factory = new ConnectionFactory();
+    private void setupConnectionFactory() {
+        String uri = "amqp://vxoqwope:CQyPw9I5N8Hn70MjvQu0dd9lwcdnJZA0@spotted-monkey.rmq.cloudamqp.com/vxoqwope";
+        try {
+            factory.setAutomaticRecoveryEnabled(false);
+            factory.setUri(uri);
+        } catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    void subscribe() {
+        subscribeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    try {
+                        Connection connection = factory.newConnection();
+                        Channel channel = connection.createChannel();
+                        channel.basicQos(1);
+                        AMQP.Queue.DeclareOk q = channel.queueDeclare();
+                        channel.queueBind(q.getQueue(), "amq.fanout", "chat");
+                        QueueingConsumer consumer = new QueueingConsumer(channel);
+                        channel.basicConsume(q.getQueue(), true, consumer);
+
+                        while (true) {
+                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                            String string = new String(delivery.getBody());
+
+                            Message messageReceived = XMLParser.getMessageFromXmlString(string);
+                            history.add(messageReceived);
+                            chatHistoryAdapter.notifyDataSetChanged();
+
+                            // TODO: FIX SO LIST VIEW SHOWS MESSAGE WITHOUT HAVING TO BE SCROLLED FIRST
+                            chatHistory.setSelection(chatHistory.getCount() - 1);
+                        }
+                    }
+                    catch (InterruptedException e) {
+                        break;
+                    }
+                    catch (Exception e1) {
+                        Log.d("", "Connection broken: " + e1.getClass().getName());
+                        try {
+                            Thread.sleep(5000); //sleep and then try again
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        subscribeThread.start();
     }
 }

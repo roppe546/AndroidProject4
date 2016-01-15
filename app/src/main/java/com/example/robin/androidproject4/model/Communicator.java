@@ -4,15 +4,20 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DateFormat;
@@ -21,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
+
 
 /**
  * Created by robin on 12/1/16.
@@ -95,16 +101,26 @@ public class Communicator {
         return null;
     }
 
-    // TODO: Should handle images as well
-    public static boolean addNewMessageRequest(String from, String to, String message) {
+    /**
+     * Send a message to the specified user.
+     *
+     * @param from          who sends the message
+     * @param to            to whom the message is sent
+     * @param message       the message itself
+     * @param imageUri      uri to image if there is one, use null if not image is attached
+     * @return              true or false whether it succeeded
+     */
+    public static boolean addNewMessageRequest(String from, String to, String message, Uri imageUri) {
 
         try {
-            return new doPostNewMessageRequest().execute(API_ENDPOINT + "messages", from, to, message).get();
+            new doPostNewMessageRequest(imageUri).execute(API_ENDPOINT + "messages", from, to, message);
         }
         catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+
+        return true;
     }
 
     private static class doPostNewUserRequest extends AsyncTask<String, Void, Boolean> {
@@ -312,15 +328,7 @@ public class Communicator {
                             if (xpp.getName().equals("Status")) {
                                 if (xpp.next() == XmlPullParser.TEXT) {
                                     Log.i("PARSE", "Status tag found in Friend: " + xpp.getText());
-
                                     status = xpp.getText();
-//                                    try {
-//                                        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-//                                        lastReceivedDate = format.parse(xpp.getText());
-//                                    }
-//                                    catch (ParseException e) {
-//                                        e.printStackTrace();
-//                                    }
                                     xpp.nextTag();
                                 }
                             }
@@ -554,6 +562,11 @@ public class Communicator {
     }
 
     private static class doPostNewMessageRequest extends AsyncTask<String, Void, Boolean> {
+        Uri imageUri = null;
+
+        public doPostNewMessageRequest(Uri uriToImageLocal) {
+            this.imageUri = uriToImageLocal;
+        }
 
         @Override
         protected Boolean doInBackground(String... params) {
@@ -568,13 +581,24 @@ public class Communicator {
                 data.put("Sender", from);
                 data.put("Receiver", to);
                 data.put("Text", message);
-                // TODO: Use image data
-                data.put("Image", "");
+
+                if (imageUri != null) {
+                    Log.i("Communicator", "Param 4 (imageUri) NOT null");
+                    String url = uploadImage(API_ENDPOINT + "upload");
+                    Log.i("Communicator", "Url returned from uploadImage: " + url);
+                    data.put("Image", url);
+                }
+                else {
+                    Log.i("Communicator", "Param 4 (imageUri) IS null");
+                    data.put("Image", "");
+                }
 
                 if (!(data.length() > 0)) {
                     // JSON object empty, return
                     return false;
                 }
+
+                Log.i("Communicator", "JSON object sent: " + data.toString());
 
                 // Create connection
                 URL url = new URL(params[0]);
@@ -592,7 +616,9 @@ public class Communicator {
                 writer.close();
 
                 // Receive result
-                if (http.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                int responseCode = http.getResponseCode();
+                Log.i("Communicator", "Send message to server response code: " + responseCode);
+                if (responseCode == HttpURLConnection.HTTP_OK) {
                     Log.i("Communicator", "Message was successfully sent to back end");
                     return true;
                 }
@@ -611,6 +637,104 @@ public class Communicator {
                     http.disconnect();
                 }
             }
+        }
+
+        private String uploadImage(String uploadUri) {
+            String lineEnd = "\r\n";
+            String twoHyphens = "--";
+            String boundary =  "*****";
+
+            int bytesRead;
+            int bytesAvailable;
+            int bufferSize;
+            byte[] buffer;
+            int maxBufferSize = 1024 * 1024;
+
+            String blobUrl = "";
+
+            HttpURLConnection http = null;
+            DataOutputStream output = null;
+            InputStream input = null;
+            FileInputStream fileInput = null;
+
+            try {
+                fileInput = new FileInputStream(new File(imageUri.getPath()));
+
+                // Create connection
+                URL url = new URL(uploadUri);
+                http = (HttpURLConnection) url.openConnection();
+                http.setDoInput(true);
+                http.setDoOutput(true);
+                http.setUseCaches(false);
+                http.setRequestMethod("POST");
+                http.setRequestProperty("Connection", "Keep-Alive");
+                http.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+                // Create output stream
+                output = new DataOutputStream(http.getOutputStream());
+
+                // Send file to server
+                output.writeBytes(twoHyphens + boundary + lineEnd);
+                output.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + imageUri.getPath() + "\"" + lineEnd);
+                output.writeBytes(lineEnd);
+
+                bytesAvailable = fileInput.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                buffer = new byte[bufferSize];
+
+                // Read from file
+                bytesRead = fileInput.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0) {
+                    output.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInput.available();
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = fileInput.read(buffer, 0, bufferSize);
+                }
+
+                output.writeBytes(lineEnd);
+                output.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+                // Read response
+                int responseCode = http.getResponseCode();
+                Log.i("Communicator", "uploadImage: response code: " + responseCode);
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.i("Communicator", "uploadImage: Got http OK back");
+                    input = http.getInputStream();
+
+                    // Copy data from input stream into string
+                    StringWriter writer = new StringWriter();
+                    IOUtils.copy(input, writer, "UTF-8");
+                    String str = writer.toString();
+
+                    // Split screen and get part which has uri
+                    String[] parts = str.split("\"");
+                    blobUrl = parts[3];
+                }
+
+                fileInput.close();
+                output.flush();
+                output.close();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                try {
+                    if (fileInput != null)
+                        fileInput.close();
+                    if (output != null) {
+                        output.flush();
+                        output.close();
+                    }
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Log.i("PARSE", "uploadImage returning: " + blobUrl);
+            return blobUrl;
         }
     }
 }

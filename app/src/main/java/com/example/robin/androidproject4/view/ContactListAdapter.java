@@ -37,7 +37,7 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
 
         // Set fields
         // Profile picture
-        // TODO: Use Picasso fallback and error methods instead. Need to change Uri to String in Contact class or something.
+        // TODO: Use Picasso fallback and error methods instead.
         if (contact.getProfilePictureUri() == null) {
             // Placeholder in case user hasn't chosen an image on Google account
             Picasso.with(getContext()).load(R.drawable.ic_profile_placeholder).into(profilePicture);

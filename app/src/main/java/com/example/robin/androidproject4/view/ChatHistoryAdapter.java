@@ -3,7 +3,6 @@ package com.example.robin.androidproject4.view;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Message;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,27 +37,45 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.chathistory_item, parent, false);
         }
 
-        // Get elements in item
-        TextView sender = (TextView) convertView.findViewById(R.id.chat_sender);
-        TextView timestamp = (TextView) convertView.findViewById(R.id.chat_timestamp);
-        TextView messageText = (TextView) convertView.findViewById(R.id.chat_message);
-        ImageView image = (ImageView) convertView.findViewById(R.id.chat_message_image);
+        // Get elements in item and put in view holder
+        ViewHolder holder = new ViewHolder();
+        holder.sender = (TextView) convertView.findViewById(R.id.chat_sender);
+        holder.timestamp = (TextView) convertView.findViewById(R.id.chat_timestamp);
+        holder.messageText = (TextView) convertView.findViewById(R.id.chat_message);
+        holder.image = (ImageView) convertView.findViewById(R.id.chat_message_image);
+        convertView.setTag(holder);
 
         // Set fields
         // Username
-        sender.setText(message.getSender());
+        holder.sender.setText(message.getSender());
 
         // Timestamp
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         String receivedText = df.format(message.getTimestamp());
-        timestamp.setText(receivedText);
+        holder.timestamp.setText(receivedText);
 
         // Message
-        messageText.setText(message.getMessage());
+        holder.messageText.setText(message.getMessage());
 
         // Image
-//        image.setImageBitmap(message.getImage());
+        if (message.getImageUri() == null) {
+            // Put 1 pixel in image view in case message doesn't have an image attached to itself.
+            // This needed to be done otherwise Picasso would do very weird things, such as loading
+            // images into wrong items and such.
+            Picasso.with(getContext()).load(R.drawable.ic_one_pixel_transparent).into(holder.image);
+        }
+        else {
+            Picasso.with(getContext()).load(message.getImageUri().toString()).placeholder(R.drawable.ic_image_black_48dp).into(holder.image);
+        }
 
         return convertView;
+    }
+
+    // For view holder pattern
+    static class ViewHolder {
+        TextView sender;
+        TextView timestamp;
+        TextView messageText;
+        ImageView image;
     }
 }
