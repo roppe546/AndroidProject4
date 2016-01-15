@@ -30,29 +30,38 @@ public class ContactListAdapter extends ArrayAdapter<Contact> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.contactlist_item, parent, false);
         }
 
-        // Get elements in item
-        ImageView profilePicture = (ImageView) convertView.findViewById(R.id.contactlist_item_profile_picture);
-        TextView username = (TextView) convertView.findViewById(R.id.contactlist_item_username);
-        TextView onlineStatus = (TextView) convertView.findViewById(R.id.contactlist_item_status);
+        // Get elements in item and put in view holder
+        ViewHolder holder = new ViewHolder();
+        holder.profilePicture = (ImageView) convertView.findViewById(R.id.contactlist_item_profile_picture);
+        holder.username = (TextView) convertView.findViewById(R.id.contactlist_item_username);
+        holder.onlineStatus = (TextView) convertView.findViewById(R.id.contactlist_item_status);
+        convertView.setTag(holder);
 
         // Set fields
         // Profile picture
         // TODO: Use Picasso fallback and error methods instead.
         if (contact.getProfilePictureUri() == null) {
             // Placeholder in case user hasn't chosen an image on Google account
-            Picasso.with(getContext()).load(R.drawable.ic_profile_placeholder).into(profilePicture);
+            Picasso.with(getContext()).load(R.drawable.ic_profile_placeholder).into(holder.profilePicture);
         }
         else {
-            Picasso.with(getContext()).load(contact.getProfilePictureUri().toString()).placeholder(R.drawable.ic_profile_placeholder).into(profilePicture);
+            Picasso.with(getContext()).load(contact.getProfilePictureUri().toString()).placeholder(R.drawable.ic_profile_placeholder).into(holder.profilePicture);
         }
 
         // Username
-        username.setText(contact.getUsername());
+        holder.username.setText(contact.getUsername());
 
         // Online status
         String status = contact.getStatus();
-        onlineStatus.setText(status);
+        holder.onlineStatus.setText(status);
 
         return convertView;
+    }
+
+    // For view holder pattern
+    static class ViewHolder {
+        ImageView profilePicture;
+        TextView username;
+        TextView onlineStatus;
     }
 }
