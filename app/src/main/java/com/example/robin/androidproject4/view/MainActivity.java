@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
     private ListView contactList;
 
     // Google Log-in
-    GoogleApiClient mGoogleApiClient;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
