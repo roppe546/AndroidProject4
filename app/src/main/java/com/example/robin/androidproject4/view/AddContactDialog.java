@@ -17,8 +17,8 @@ import com.example.robin.androidproject4.model.Communicator;
  */
 public class AddContactDialog extends DialogFragment {
     /**
-     * This interface is used to retrieve data from from this DialogFragment from
-     * the parent activity.
+     * This interface can be used by an activity in order to get information whether
+     * this DialogFragment succeeded with its purpose or note.
      */
     public interface AddContactDialogListener {
         void onFinishAddContactDialog(boolean success);

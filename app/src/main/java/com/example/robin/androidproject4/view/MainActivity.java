@@ -61,15 +61,26 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
         }
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
 
+        // Check whether the user logged reaching this activity is logged
+        // in or not. If not, close activity and go back to the login
+        // activity.
         if (!checkIfLoggedIn()) {
             this.finish();
         }
     }
 
+
+    /**
+     * Inflates a menu into the action bar.
+     *
+     * @param menu  the menu which to inflate
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
@@ -77,6 +88,13 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    /**
+     * Called when an item in the action menu was selected.
+     *
+     * @param item  the item that was selected
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
@@ -115,6 +133,13 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * This method is used by the Add Contact DialogFramgent when it finishes
+     * to notify this activity whether the dialog succeeded or not.
+     *
+     * @param success   true or false whether dialog finished successfully
+     */
     @Override
     public void onFinishAddContactDialog(boolean success) {
         if (success) {
@@ -130,6 +155,10 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
         }
     }
 
+
+    /**
+     * Signs out the user from Google. Clears local login data.
+     */
     private void signOut() {
         Auth.GoogleSignInApi.signOut(mGoogleApiClient)
                 .setResultCallback(new ResultCallback<Status>() {
@@ -152,6 +181,13 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
                 });
     }
 
+
+    /**
+     * Checks if a user is logged in. If the user is not logged in he/she is
+     * redirected to the login activity.
+     *
+     * @return  true or false whether the user is logged in or not
+     */
     private boolean checkIfLoggedIn() {
         try {
             Account.getAccount().getId();
@@ -175,6 +211,10 @@ public class MainActivity extends AppCompatActivity implements AddContactDialog.
     }
 
 
+    /**
+     * This class checks which of the contacts was selected in the list and
+     * redirects to the activity which has the chat with that user.
+     */
     private class ContactSelectedListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
