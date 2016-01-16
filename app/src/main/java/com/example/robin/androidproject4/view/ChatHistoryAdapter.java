@@ -47,6 +47,16 @@ public class ChatHistoryAdapter extends ArrayAdapter<Message> {
         holder.image = (ImageView) convertView.findViewById(R.id.chat_message_image);
         convertView.setTag(holder);
 
+        // Find scale of screen
+        float px = convertView.getResources().getDisplayMetrics().density;
+
+        // Set minimum height for text view so chat doesn't look too squashed
+        int minHeight = (int) (32 * px + 0.5f);
+        holder.messageText.setMinHeight(minHeight);
+
+        // Set view for text dynamically so it adjust height of item in history
+        holder.messageText.measure(View.MeasureSpec.makeMeasureSpec((int) px, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+
         // Set fields
         // Username
         holder.sender.setText(message.getSender());
