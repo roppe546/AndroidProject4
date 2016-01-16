@@ -105,6 +105,17 @@ public class ChatActivity extends AppCompatActivity {
         deleteAttachmentButton.setOnClickListener(new DeleteAttachmentButtonClickListener());
         sendButton.setOnClickListener(new SendButtonClickListener());
 
+        // See whether image was attached form earlier (i.e. before rotating)
+        if (savedInstanceState != null && savedInstanceState.getString("selectedImageUri") != null) {
+            // Image was attached from before, save uri and set buttons
+            selectedImageUri = Uri.parse(savedInstanceState.getString("selectedImageUri"));
+            changeUiToAttachmentAdded();
+        }
+        else {
+            // No image was attached from before
+            changeUiToAttachmentRemoved();
+        }
+
         // Populate chat history
         history = new ArrayList<>();
         history = Communicator.getChatHistoryRequest(loggedInUserEmail, contactEmail);
@@ -119,7 +130,7 @@ public class ChatActivity extends AppCompatActivity {
         // Configure Google Sign-In
         mGoogleApiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, null).addApi(Auth.GOOGLE_SIGN_IN_API).build();
 
-        //TEST CODE BELOW
+        // Connect to RabbitMQ and subscribe to queue
         setupConnectionFactory();
         subscribe();
     }
@@ -131,6 +142,18 @@ public class ChatActivity extends AppCompatActivity {
 
         // Close subscription thread
         subscribeThread.interrupt();
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i("State", "Saving state data");
+
+        if (selectedImageUri != null) {
+            outState.putString("selectedImageUri", selectedImageUri.toString());
+            Log.i("State", "Saved selectedImageUri: " + selectedImageUri.toString());
+        }
     }
 
 
@@ -224,7 +247,7 @@ public class ChatActivity extends AppCompatActivity {
                 photo.delete();
             }
             catch(Exception e) {
-                Log.i("Chat", "Can't create temporary file to store image in.");
+                Log.i("Chat", "Can't create temporary file to store image in");
                 Toast.makeText(getApplicationContext(), "Cant take a picture", Toast.LENGTH_LONG);
             }
 
@@ -285,16 +308,7 @@ public class ChatActivity extends AppCompatActivity {
             case CAPTURE_IMAGE_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     Log.i("Chat", "Image was captured");
-
-                    // Set icon in message field to give feedback an image is attached
-                    Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
-                    img.setBounds(0, 0, 50, 50);
-                    textField.setCompoundDrawables(null, null, img, null);
-
-                    // Hide camera/gallery buttons and show delete attachment button
-                    cameraButton.setVisibility(View.GONE);
-                    galleryButton.setVisibility(View.GONE);
-                    deleteAttachmentButton.setVisibility(View.VISIBLE);
+                    changeUiToAttachmentAdded();
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was taken");
@@ -311,15 +325,7 @@ public class ChatActivity extends AppCompatActivity {
                     // Save image to variable
                     selectedImageUri = data.getData();
 
-                    // Set icon in message field to give feedback an image is attached
-                    Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
-                    img.setBounds(0, 0, 50, 50);
-                    textField.setCompoundDrawables(null, null, img, null);
-
-                    // Hide camera/gallery buttons and show only delete attachment button
-                    cameraButton.setVisibility(View.GONE);
-                    galleryButton.setVisibility(View.GONE);
-                    deleteAttachmentButton.setVisibility(View.VISIBLE);
+                    changeUiToAttachmentAdded();
                 }
                 else if (resultCode == RESULT_CANCELED) {
                     Log.i("Chat", "No image was chosen");
@@ -342,13 +348,7 @@ public class ChatActivity extends AppCompatActivity {
             selectedImageUri = null;
             selectedImageRealPath = null;
 
-            // Clear attachment icon from text field
-            textField.setCompoundDrawables(null, null, null, null);
-
-            // Show camera/gallery buttons and hide delete attachment button
-            cameraButton.setVisibility(View.VISIBLE);
-            galleryButton.setVisibility(View.VISIBLE);
-            deleteAttachmentButton.setVisibility(View.GONE);
+            changeUiToAttachmentRemoved();
         }
     }
 
@@ -367,56 +367,63 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             if (selectedImageUri == null) {
-                // No image was selected
                 Log.i("Chat", "Image was not selected");
-
-                // Add locally to history
-                history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), null));
-                chatHistoryAdapter.notifyDataSetChanged();
-
-                // Send to remote server
-                Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), null);
+                sendMessageNoImage();
             }
             else {
-                // Image was selected
                 Log.i("Chat", "Image was selected");
-
-                // Image taken from camera
-                if (selectedImageUri.getScheme().compareTo("file") == 0) {
-                    selectedImageRealPath = Uri.parse(selectedImageUri.getPath());
-                }
-                // Image chosen from gallery
-                else if (selectedImageUri.getScheme().compareTo("content") == 0) {
-                    // Get real path as gallery app returns a content path, otherwise it will
-                    // fail to find the image when uploading
-                    selectedImageRealPath = getRealPath(selectedImageUri);
-                }
-                Log.i("Chat", "Real path for image: " + selectedImageRealPath.toString());
-
-                // Add locally to history
-                history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
-                chatHistoryAdapter.notifyDataSetChanged();
-
-                // Send to remote server
-                Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), selectedImageRealPath);
-
-                // Clear attachment icon from text field
-                textField.setCompoundDrawables(null, null, null, null);
-
-                // Show camera/gallery buttons and hide delete attachment button
-                cameraButton.setVisibility(View.VISIBLE);
-                galleryButton.setVisibility(View.VISIBLE);
-                deleteAttachmentButton.setVisibility(View.GONE);
-
-                // Set image to null again so it won't be sent next time
-                selectedImageUri = null;
-                selectedImageRealPath = null;
+                sendMessageWithImage();
+                changeUiToAttachmentRemoved();
             }
 
+            // Clear message field and scroll down to last message
             textField.setText("");
             chatHistory.setSelection(chatHistory.getCount() - 1);
 
         }
+    }
+
+
+    /**
+     * This method is used when a message without an image is to be sent
+     */
+    private void sendMessageNoImage() {
+
+        // Add locally to history
+        history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), null));
+        chatHistoryAdapter.notifyDataSetChanged();
+
+        // Send to remote server
+        Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), null);
+    }
+
+    /**
+     * This method is used when a message with an image attached is to be sent
+     */
+    private void sendMessageWithImage() {
+
+        if (selectedImageUri.getScheme().compareTo("file") == 0) {
+            Log.i("Chat", "Image was taken with camera");
+            selectedImageRealPath = Uri.parse(selectedImageUri.getPath());
+        }
+        else if (selectedImageUri.getScheme().compareTo("content") == 0) {
+            Log.i("Chat", "Image was chosen from gallery");
+            // Get real path as gallery app returns a content path, otherwise it will
+            // fail to find the image when uploading
+            selectedImageRealPath = getRealPath(selectedImageUri);
+        }
+        Log.i("Chat", "Real path for image: " + selectedImageRealPath.toString());
+
+        // Add locally to history
+        history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
+        chatHistoryAdapter.notifyDataSetChanged();
+
+        // Send to remote server
+        Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), selectedImageRealPath);
+
+        // Set image to null again so it won't be sent next time
+        selectedImageUri = null;
+        selectedImageRealPath = null;
     }
 
     /**
@@ -497,6 +504,29 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void changeUiToAttachmentAdded() {
+        // Set icon in message field to give feedback an image is attached
+        Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
+        img.setBounds(0, 0, 50, 50);
+        textField.setCompoundDrawables(null, null, img, null);
+
+        // Hide camera/gallery buttons and show delete attachment button
+        cameraButton.setVisibility(View.GONE);
+        galleryButton.setVisibility(View.GONE);
+        deleteAttachmentButton.setVisibility(View.VISIBLE);
+    }
+
+    private void changeUiToAttachmentRemoved() {
+        // Clear attachment icon from text field
+        textField.setCompoundDrawables(null, null, null, null);
+
+        // Show camera/gallery buttons and hide delete attachment button
+        cameraButton.setVisibility(View.VISIBLE);
+        galleryButton.setVisibility(View.VISIBLE);
+        deleteAttachmentButton.setVisibility(View.GONE);
+    }
+
+
     private void setupConnectionFactory() {
         try {
             factory.setAutomaticRecoveryEnabled(false);
@@ -551,11 +581,11 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                     catch (InterruptedException e) {
-                        Log.i("Push", "Received InterruptedException, disconnecting.");
+                        Log.i("Push", "Received InterruptedException, disconnecting");
 
                         try {
                             connection.close();
-                            Log.i("Push", "Successfully disconnected.");
+                            Log.i("Push", "Successfully disconnected");
                         }
                         catch (IOException ex) {
                             ex.printStackTrace();
@@ -572,11 +602,11 @@ public class ChatActivity extends AppCompatActivity {
                             Thread.sleep(5000);
                         }
                         catch (InterruptedException ex) {
-                            Log.i("Push", "Received InterruptedException, disconnecting.");
+                            Log.i("Push", "Received InterruptedException, disconnecting");
 
                             try {
                                 connection.close();
-                                Log.i("Push", "Successfully disconnected.");
+                                Log.i("Push", "Successfully disconnected");
                             }
                             catch (IOException ioe) {
                                 ex.printStackTrace();
