@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutionException;
  * Created by robin on 12/1/16.
  */
 public class Communicator {
-    private static final String API_ENDPOINT = "http://192.168.0.11:60630/api/";
+    private static final String API_ENDPOINT = "http://cloudmessenger.azurewebsites.net/api/";
 
     public static boolean registerUser(String userEmail, Uri photoUri) {
         try {
