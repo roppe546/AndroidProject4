@@ -5,6 +5,8 @@ import android.net.Uri;
 import java.util.Date;
 
 /**
+ * This class represents a single message in a conversation.
+ *
  * Created by robin on 7/1/16.
  */
 public class Message {

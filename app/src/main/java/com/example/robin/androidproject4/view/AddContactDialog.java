@@ -13,6 +13,8 @@ import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Communicator;
 
 /**
+ * The dialog window for adding a new contact.
+ *
  * Created by robin on 8/1/16.
  */
 public class AddContactDialog extends DialogFragment {

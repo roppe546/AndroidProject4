@@ -17,8 +17,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * This class parses json/xml data.
+ *
  * Created by robin on 14/1/16.
  */
+// TODO: Move all parsing code to here from Communicator.
 public class XMLParser {
     public static Message getMessageFromXmlString(String string) {
         int id = -1;        // can be used if we want to implement message editing later

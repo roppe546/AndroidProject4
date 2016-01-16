@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
+ * Custom adapter for the chat history list.
+ *
  * Created by robin on 7/1/16.
  */
 public class ChatHistoryAdapter extends ArrayAdapter<Message> {

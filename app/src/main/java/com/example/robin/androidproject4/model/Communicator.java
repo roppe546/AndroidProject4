@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * This does all the communication with the back end servers.
+ *
  * Created by robin on 12/1/16.
  */
 public class Communicator {

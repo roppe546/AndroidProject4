@@ -15,6 +15,8 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 /**
+ * Custom adapter for the contact list.
+ *
  * Created by robin on 6/1/16.
  */
 public class ContactListAdapter extends ArrayAdapter<Contact> {

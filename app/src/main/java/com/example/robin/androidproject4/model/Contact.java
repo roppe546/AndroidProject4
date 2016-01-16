@@ -3,6 +3,8 @@ package com.example.robin.androidproject4.model;
 import android.net.Uri;
 
 /**
+ * This class represents a single contact the user has.
+ *
  * Created by robin on 6/1/16.
  */
 public class Contact {
