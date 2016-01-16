@@ -39,13 +39,12 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 public class ChatActivity extends AppCompatActivity {
     // Request codes
@@ -67,9 +66,15 @@ public class ChatActivity extends AppCompatActivity {
     private SharedPreferences pref;
 
     // Google Log-in
-    GoogleApiClient mGoogleApiClient;
+    private GoogleApiClient mGoogleApiClient;
 
+    // Variables used for sending/receiving data
+    private String loggedInUserEmail;
+    private String contactEmail;
     private Thread subscribeThread;
+    private final String BROKER_CONNECTION_URI = "amqp://vxoqwope:CQyPw9I5N8Hn70MjvQu0dd9lwcdnJZA0@spotted-monkey.rmq.cloudamqp.com/vxoqwope";
+    private ConnectionFactory factory = new ConnectionFactory();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +86,10 @@ public class ChatActivity extends AppCompatActivity {
 
         // Get shared preferences
         pref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Save contact email from intent data
+        loggedInUserEmail = pref.getString("loggedInUserEmail", null);
+        contactEmail = getIntent().getStringExtra("contactEmail");
 
         // Get UI elements
         chatHistory = (ListView) findViewById(R.id.history_list_view);
@@ -98,7 +107,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Populate chat history
         history = new ArrayList<>();
-        history = Communicator.getChatHistoryRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"));
+        history = Communicator.getChatHistoryRequest(loggedInUserEmail, contactEmail);
 
         chatHistoryAdapter = new ChatHistoryAdapter(this, history);
         chatHistory.setAdapter(chatHistoryAdapter);
@@ -113,6 +122,15 @@ public class ChatActivity extends AppCompatActivity {
         //TEST CODE BELOW
         setupConnectionFactory();
         subscribe();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Close subscription thread
+        subscribeThread.interrupt();
     }
 
 
@@ -176,7 +194,7 @@ public class ChatActivity extends AppCompatActivity {
                             Log.i("Login", "Logged out (main)");
 
                             // Set status offline
-                            Communicator.putUserRequest(pref.getString("loggedInUserEmail", null), Account.getAccount().getPhotoUrl(), getString(R.string.STATUS_OFFLINE));
+                            Communicator.putUserRequest(loggedInUserEmail, Account.getAccount().getPhotoUrl(), getString(R.string.STATUS_OFFLINE));
 
                             // Clear logged in user from shared preferences
                             SharedPreferences.Editor editor = pref.edit();
@@ -353,11 +371,11 @@ public class ChatActivity extends AppCompatActivity {
                 Log.i("Chat", "Image was not selected");
 
                 // Add locally to history
-                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), null));
+                history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), null));
                 chatHistoryAdapter.notifyDataSetChanged();
 
                 // Send to remote server
-                Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), null);
+                Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), null);
             }
             else {
                 // Image was selected
@@ -376,11 +394,11 @@ public class ChatActivity extends AppCompatActivity {
                 Log.i("Chat", "Real path for image: " + selectedImageRealPath.toString());
 
                 // Add locally to history
-                history.add(new Message(pref.getString("loggedInUserEmail", null), new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
+                history.add(new Message(loggedInUserEmail, new Date(), textField.getText().toString(), selectedImageUri, selectedImageRealPath));
                 chatHistoryAdapter.notifyDataSetChanged();
 
                 // Send to remote server
-                Communicator.addNewMessageRequest(pref.getString("loggedInUserEmail", null), getIntent().getStringExtra("contactEmail"), textField.getText().toString(), selectedImageRealPath);
+                Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), selectedImageRealPath);
 
                 // Clear attachment icon from text field
                 textField.setCompoundDrawables(null, null, null, null);
@@ -479,28 +497,13 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    // TEST CODE BELOW
-    private BlockingDeque queue = new LinkedBlockingDeque();
-    void publishMessage(String message) {
-        try {
-            Log.i("Push", "[q] " + message);
-            queue.putLast(message);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    ConnectionFactory factory = new ConnectionFactory();
     private void setupConnectionFactory() {
-        String uri = "amqp://vxoqwope:CQyPw9I5N8Hn70MjvQu0dd9lwcdnJZA0@spotted-monkey.rmq.cloudamqp.com/vxoqwope";
-
         try {
             factory.setAutomaticRecoveryEnabled(false);
-            factory.setUri(uri);
+            factory.setUri(BROKER_CONNECTION_URI);
         }
-        catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
-            e1.printStackTrace();
+        catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e) {
+            e.printStackTrace();
         }
     }
 
@@ -509,41 +512,83 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void run() {
                 while(true) {
+                    Connection connection = null;
+                    Channel channel = null;
+
                     try {
-                        Connection connection = factory.newConnection();
-                        Channel channel = connection.createChannel();
+                        connection = factory.newConnection();
+                        channel = connection.createChannel();
                         channel.basicQos(1);
                         AMQP.Queue.DeclareOk q = channel.queueDeclare();
-                        channel.queueBind(q.getQueue(), "amq.fanout", "chat");
+
+                        // Create queue name to subscribe to
+                        String loggedInUserEmail = pref.getString("loggedInUserEmail", null);
+                        String contactEmail = getIntent().getStringExtra("contactEmail");
+                        String queue = contactEmail + "TO" + loggedInUserEmail;
+
+                        Log.i("Push", "Subscribing to queue: " + queue);
+                        channel.queueBind(q.getQueue(), "chat", queue);
+
                         QueueingConsumer consumer = new QueueingConsumer(channel);
                         channel.basicConsume(q.getQueue(), true, consumer);
 
                         while (true) {
                             QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                            Log.i("Push", "Message was received");
                             String string = new String(delivery.getBody());
 
                             Message messageReceived = XMLParser.getMessageFromXmlString(string);
                             history.add(messageReceived);
-                            chatHistoryAdapter.notifyDataSetChanged();
 
-                            // TODO: FIX SO LIST VIEW SHOWS MESSAGE WITHOUT HAVING TO BE SCROLLED FIRST
-                            chatHistory.setSelection(chatHistory.getCount() - 1);
+                            // Use main thread to update UI with new message
+                            ChatActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    chatHistoryAdapter.notifyDataSetChanged();
+                                    chatHistory.setSelection(chatHistory.getCount() - 1);
+                                }
+                            });
                         }
                     }
                     catch (InterruptedException e) {
+                        Log.i("Push", "Received InterruptedException, disconnecting.");
+
+                        try {
+                            connection.close();
+                            Log.i("Push", "Successfully disconnected.");
+                        }
+                        catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+
                         break;
                     }
-                    catch (Exception e1) {
-                        Log.i("Push", "Connection broken: " + e1.getClass().getName());
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        Log.i("Push", "Connection broken: " + e.getClass().getName());
+
                         try {
-                            Thread.sleep(5000); //sleep and then try again
-                        } catch (InterruptedException e) {
+                            // Sleep 5 seconds and try again
+                            Thread.sleep(5000);
+                        }
+                        catch (InterruptedException ex) {
+                            Log.i("Push", "Received InterruptedException, disconnecting.");
+
+                            try {
+                                connection.close();
+                                Log.i("Push", "Successfully disconnected.");
+                            }
+                            catch (IOException ioe) {
+                                ex.printStackTrace();
+                            }
+
                             break;
                         }
                     }
                 }
             }
         });
+
         subscribeThread.start();
     }
 }
