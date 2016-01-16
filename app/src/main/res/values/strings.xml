@@ -23,8 +23,8 @@
     <string name="chat_choose_image_text">Choose an image</string>
     <string name="chat_error_no_gallery_app_found">No image viewer app found</string>
     <string name="chat_error_could_not_read_image">File couldn\'t be read</string>
-    <string name="chat_error_cant_take_picture">Cant take a picture</string>
-    <string name="chat_error_message_too_long">Message can't be longer than 256 characters</string>
+    <string name="chat_error_cant_take_picture">Can\'t take a picture</string>
+    <string name="chat_error_message_too_long">Message can\'t be longer than 256 characters</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
