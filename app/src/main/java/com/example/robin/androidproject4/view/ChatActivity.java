@@ -252,7 +252,7 @@ public class ChatActivity extends AppCompatActivity {
             }
             catch(Exception e) {
                 Log.i("Chat", "Can't create temporary file to store image in");
-                Toast.makeText(getApplicationContext(), "Cant take a picture", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), getText(R.string.chat_error_cant_take_picture), Toast.LENGTH_LONG);
             }
 
             if (photo != null) {
@@ -384,7 +384,7 @@ public class ChatActivity extends AppCompatActivity {
             // Make sure message isn't too long
             if (textField.getText().length() > 256) {
                 Log.i("Chat", "Message longer than allowed (max 256 characters), message was: " + textField.getText().length() + " characters long");
-                Toast.makeText(getApplicationContext(), "Message can't be longer than 256 characters", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), getText(R.string.chat_error_message_too_long), Toast.LENGTH_LONG).show();
                 return;
             }
 

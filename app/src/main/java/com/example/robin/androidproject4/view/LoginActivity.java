@@ -94,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
             // Register with back end (if new member)
             boolean success = Communicator.registerUser(account.getEmail(), account.getPhotoUrl());
             if (success) {
-                Log.i("Login123", "Login succeeded");
+                Log.i("Login", "Login succeeded");
             }
 
             // Set user as logged in
@@ -106,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         else {
             // Sign in failed
-            Toast.makeText(LoginActivity.this, "Could not sign in", Toast.LENGTH_LONG).show();
+            Toast.makeText(LoginActivity.this, getText(R.string.error_sign_in_failed), Toast.LENGTH_LONG).show();
         }
     }
 }
