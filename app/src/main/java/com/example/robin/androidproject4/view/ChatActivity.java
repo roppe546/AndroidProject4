@@ -375,8 +375,16 @@ public class ChatActivity extends AppCompatActivity {
         public void onClick(View v) {
             Log.i("Chat", "Send button clicked");
 
+            // Make sure message field is not empty
             if (textField.getText().length() <= 0 || textField.getText() == null) {
                 Log.i("Chat", "Text field empty, not sending");
+                return;
+            }
+
+            // Make sure message isn't too long
+            if (textField.getText().length() > 256) {
+                Log.i("Chat", "Message longer than allowed (max 256 characters), message was: " + textField.getText().length() + " characters long");
+                Toast.makeText(getApplicationContext(), "Message can't be longer than 256 characters", Toast.LENGTH_LONG).show();
                 return;
             }
 
