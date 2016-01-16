@@ -208,6 +208,10 @@ public class ChatActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * Signs out the user from Google. Clears local login data.
+     */
     private void signOut() {
         Auth.GoogleSignInApi.signOut(mGoogleApiClient)
                 .setResultCallback(new ResultCallback<Status>() {
@@ -265,6 +269,15 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * This method creates a temporary file where images taken with the camera
+     * are saved.
+     *
+     * @param part  prefix for image name
+     * @param ext   extension type of the image
+     * @return      file where image can be stored
+     * @throws Exception
+     */
     private File createTempFile(String part, String ext) throws Exception {
         File tempDir = Environment.getExternalStorageDirectory();
         tempDir = new File(tempDir.getAbsolutePath()+"/.temp/");
@@ -276,8 +289,9 @@ public class ChatActivity extends AppCompatActivity {
         return File.createTempFile(part, ext, tempDir);
     }
 
+
     /**
-     * Class used for handling clicks to the gallery button
+     * Class used for handling clicks to the gallery button.
      */
     private class GalleryButtonClickListener implements View.OnClickListener {
         @Override
@@ -291,12 +305,12 @@ public class ChatActivity extends AppCompatActivity {
 
 
     /**
-     * Callback method which is called when a user chooses an image from
-     * the gallery to attach to a message.
+     * Callback method which is called when either was captured from camera
+     * or an image was chosen from the gallery.
      *
      * @param requestCode   the request code which was used
      * @param resultCode    whether the action finished successfully
-     * @param data          data that was returned with the result (in our case the picture)
+     * @param data          data that was returned with the result, in this case picture data
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -340,7 +354,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     /**
-     * Class used for handling clicks to the delete attachment button
+     * Class used for handling clicks to the delete attachment button.
      */
     private class DeleteAttachmentButtonClickListener implements View.OnClickListener {
         @Override
@@ -354,7 +368,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     /**
-     * Class used for handling clicks to the send button
+     * Class used for handling clicks to the send button.
      */
     private class SendButtonClickListener implements View.OnClickListener {
         @Override
@@ -385,7 +399,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     /**
-     * This method is used when a message without an image is to be sent
+     * This method is used when a message without an image is to be sent.
      */
     private void sendMessageNoImage() {
 
@@ -397,8 +411,9 @@ public class ChatActivity extends AppCompatActivity {
         Communicator.addNewMessageRequest(loggedInUserEmail, contactEmail, textField.getText().toString(), null);
     }
 
+
     /**
-     * This method is used when a message with an image attached is to be sent
+     * This method is used when a message with an image attached is to be sent.
      */
     private void sendMessageWithImage() {
 
@@ -425,6 +440,7 @@ public class ChatActivity extends AppCompatActivity {
         selectedImageUri = null;
         selectedImageRealPath = null;
     }
+
 
     /**
      * This method gets the real path of a selected image. Because Android 4.4 (which was used in
@@ -504,6 +520,11 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * This method changes the UI to show a delete attachment button and a send
+     * button.
+     */
     private void changeUiToAttachmentAdded() {
         // Set icon in message field to give feedback an image is attached
         Drawable img = getResources().getDrawable(R.drawable.ic_attach_file_black_48dp);
@@ -516,6 +537,11 @@ public class ChatActivity extends AppCompatActivity {
         deleteAttachmentButton.setVisibility(View.VISIBLE);
     }
 
+
+    /**
+     * This method changes the UI to show a camera button, a gallery button and
+     * a send button.
+     */
     private void changeUiToAttachmentRemoved() {
         // Clear attachment icon from text field
         textField.setCompoundDrawables(null, null, null, null);
@@ -527,6 +553,10 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Creates a connection to the RabbitMQ broker in order to be able to
+     * subscribe to a queue.
+     */
     private void setupConnectionFactory() {
         try {
             factory.setAutomaticRecoveryEnabled(false);
@@ -537,6 +567,10 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Subscribes to a particular queue. In this case it subscribes to the queue
+     * named {sender@email.com}TO{receiver@email.com}.
+     */
     void subscribe() {
         subscribeThread = new Thread(new Runnable() {
             @Override
