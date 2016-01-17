@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -670,14 +669,6 @@ public class ChatActivity extends AppCompatActivity {
                         try {
                             // Sleep 5 seconds and try again
                             Thread.sleep(5000);
-
-//                            ChatActivity.this.runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    subscribe();
-//                                    return;
-//                                }
-//                            });
                         }
                         catch (InterruptedException ex) {
                             Log.i("Push", "Received InterruptedException, disconnecting");

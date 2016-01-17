@@ -40,6 +40,10 @@
     <!-- Strings related to settings -->
     <string name="settings_copyright">© 2016 Peonsson and roppe546</string>
 
+    <!-- String related to Wifi broadcast receiver -->
+    <string name="broadcast_receiver_wifi_connected">You are connected to WiFi, sending data will use its connection.</string>
+    <string name="broadcast_receiver_wifi_disconnected">You are not connected to any WiFi, sending files will use your mobile data.</string>
+
     <!-- String related to user status -->
     <string name="STATUS_ONLINE">Online</string>
     <string name="STATUS_OFFLINE">Offline</string>
