@@ -2,14 +2,17 @@ package com.example.robin.androidproject4.view;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +30,7 @@ import com.example.robin.androidproject4.R;
 import com.example.robin.androidproject4.model.Account;
 import com.example.robin.androidproject4.model.Communicator;
 import com.example.robin.androidproject4.model.Message;
+import com.example.robin.androidproject4.model.WifiChangeBroadcastReceiver;
 import com.example.robin.androidproject4.model.XMLParser;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,8 +64,6 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton deleteAttachmentButton;
     private ImageButton sendButton;
 
-    private Uri selectedImageUri = null;
-    private Uri selectedImageRealPath = null;
     private ArrayList<Message> history;
     private SharedPreferences pref;
 
@@ -72,9 +74,12 @@ public class ChatActivity extends AppCompatActivity {
     private String loggedInUserEmail;
     private String contactEmail;
     private Thread subscribeThread;
+    private Uri selectedImageUri = null;
+    private Uri selectedImageRealPath = null;
     private final String BROKER_CONNECTION_URI = "amqp://vxoqwope:CQyPw9I5N8Hn70MjvQu0dd9lwcdnJZA0@spotted-monkey.rmq.cloudamqp.com/vxoqwope";
     private ConnectionFactory factory = new ConnectionFactory();
 
+    private WifiChangeBroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +138,29 @@ public class ChatActivity extends AppCompatActivity {
         // Connect to RabbitMQ and subscribe to queue
         setupConnectionFactory();
         subscribe();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Register broadcast receiver
+        broadcastReceiver = new WifiChangeBroadcastReceiver();
+
+        IntentFilter i = new IntentFilter();
+        i.addAction(WifiManager.SUPPLICANT_CONNECTION_CHANGE_ACTION);
+        Log.i("BroadcastReceiver", "Registering WifiChangeBroadCastReceiver");
+        registerReceiver(broadcastReceiver, i);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Unregister broadcast receiver
+        Log.i("BroadcastReceiver", "Unregistering WifiChangeBroadCastReceiver");
+        unregisterReceiver(broadcastReceiver);
     }
 
 
@@ -642,6 +670,14 @@ public class ChatActivity extends AppCompatActivity {
                         try {
                             // Sleep 5 seconds and try again
                             Thread.sleep(5000);
+
+//                            ChatActivity.this.runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    subscribe();
+//                                    return;
+//                                }
+//                            });
                         }
                         catch (InterruptedException ex) {
                             Log.i("Push", "Received InterruptedException, disconnecting");
